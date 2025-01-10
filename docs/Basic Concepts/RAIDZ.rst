@@ -1,91 +1,68 @@
 RAIDZ
 =====
 
-tl;dr: RAIDZ is effective for large block sizes and sequential workloads.
+tl;dr: RAIDZ 对于大块大小和顺序工作负载是有效的。
 
-Introduction
+简介
 ~~~~~~~~~~~~
 
-RAIDZ is a variation on RAID-5 that allows for better distribution of parity
-and eliminates the RAID-5 “write hole” (in which data and parity become
-inconsistent after a power loss).
-Data and parity is striped across all disks within a raidz group.
+RAIDZ 是 RAID-5 的一种变体，它允许更好的奇偶校验分布，并消除了 RAID-5 的“写漏洞”（在电源丢失后数据和奇偶校验变得不一致的情况）。
+数据和奇偶校验在 raidz 组内的所有磁盘上条带化分布。
 
-A raidz group can have single, double, or triple parity, meaning that the raidz
-group can sustain one, two, or three failures, respectively, without losing any
-data. The ``raidz1`` vdev type specifies a single-parity raidz group; the ``raidz2``
-vdev type specifies a double-parity raidz group; and the ``raidz3`` vdev type
-specifies a triple-parity raidz group. The ``raidz`` vdev type is an alias for
-raidz1.
+一个 raidz 组可以有单、双或三重奇偶校验，这意味着 raidz 组可以分别承受一、二或三次故障而不会丢失任何数据。``raidz1`` vdev 类型指定了一个单奇偶校验的 raidz 组；``raidz2`` vdev 类型指定了一个双奇偶校验的 raidz 组；``raidz3`` vdev 类型指定了一个三重奇偶校验的 raidz 组。``raidz`` vdev 类型是 raidz1 的别名。
 
-A raidz group of N disks of size X with P parity disks can hold
-approximately (N-P)*X bytes and can withstand P devices failing without
-losing data. The minimum number of devices in a raidz group is one more
-than the number of parity disks. The recommended number is between 3 and 9
-to help increase performance.
+一个由 N 个大小为 X 的磁盘和 P 个奇偶校验磁盘组成的 raidz 组可以容纳大约 (N-P)*X 字节，并且可以承受 P 个设备故障而不丢失数据。raidz 组中的最小设备数量比奇偶校验磁盘的数量多一个。推荐的数量在 3 到 9 之间，以帮助提高性能。
 
-
-Space efficiency
+空间效率
 ~~~~~~~~~~~~~~~~
 
-Actual used space for a block in RAIDZ is based on several points:
+RAIDZ 中一个块的实际使用空间基于以下几点：
 
-- minimal write size is disk sector size (can be set via `ashift` vdev parameter)
+- 最小写入大小是磁盘扇区大小（可以通过 `ashift` vdev 参数设置）
 
-- stripe width in RAIDZ is dynamic, and starts with at least one data block part, or up to
-  ``disks count`` minus ``parity number`` parts of data block
+- RAIDZ 中的条带宽度是动态的，并且至少从一个数据块部分开始，或者最多到 ``磁盘数量`` 减去 ``奇偶校验数量`` 的数据块部分
 
-- one block of data with size of ``recordsize`` is
-  splitted equally via ``sector size`` parts
-  and written on each stripe on RAIDZ vdev
-- each stripe of data will have a part of block
+- 一个大小为 ``recordsize`` 的数据块被均等地分割成 ``扇区大小`` 部分，并写入 RAIDZ vdev 上的每个条带
 
-- in addition to data one, two or three blocks of parity should be written,
-  one per disk; so, for raidz2 of 5 disks there will be 3 blocks of data and
-  2 blocks of parity
+- 每个数据条带将有一个块的部分
 
-Due to these inputs, if ``recordsize`` is less or equal to sector size,
-then RAIDZ's parity size will be effictively equal to mirror with same redundancy.
-For example, for raidz1 of 3 disks with ``ashift=12`` and ``recordsize=4K``
-we will allocate on disk:
+- 除了数据外，还应写入一、二或三个奇偶校验块，每个磁盘一个；因此，对于 5 个磁盘的 raidz2，将有 3 个数据块和 2 个奇偶校验块
 
-- one 4K block of data
+由于这些输入，如果 ``recordsize`` 小于或等于扇区大小，那么 RAIDZ 的奇偶校验大小将有效地等于具有相同冗余的镜像。例如，对于 ``ashift=12`` 和 ``recordsize=4K`` 的 3 个磁盘的 raidz1，我们将在磁盘上分配：
 
-- one 4K parity block
+- 一个 4K 的数据块
 
-and usable space ratio will be 50%, same as with double mirror.
+- 一个 4K 的奇偶校验块
 
+可用空间比率将为 50%，与双镜像相同。
 
-Another example for ``ashift=12`` and ``recordsize=128K`` for raidz1 of 3 disks:
+另一个例子是 ``ashift=12`` 和 ``recordsize=128K`` 的 3 个磁盘的 raidz1：
 
-- total stripe width is 3
+- 总条带宽度为 3
 
-- one stripe can have up to 2 data parts of 4K size because of 1 parity blocks
+- 一个条带最多可以有 2 个 4K 大小的数据部分，因为有一个奇偶校验块
 
-- we will have 128K/8k = 16 stripes with 8K of data and 4K of parity each
+- 我们将有 128K/8k = 16 个条带，每个条带有 8K 的数据和 4K 的奇偶校验
 
-- 16 stripes each with 12k, means we write 192k to store 128k
+- 16 个条带每个有 12k，意味着我们写入 192k 来存储 128k
 
-so usable space ratio in this case will be 66%.
+因此，在这种情况下，可用空间比率将为 66%。
 
+RAIDZ 拥有的磁盘越多，条带越宽，空间效率越高。
 
-The more disks RAIDZ has, the wider the stripe, the greater the space
-efficiency.
-
-You can find actual parity cost per RAIDZ size here:
+您可以在这里找到每个 RAIDZ 大小的实际奇偶校验成本：
 
 .. raw:: html
 
     <iframe src="https://docs.google.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/pub?embed=true" height="1000px" width="100%"></iframe>
 
-(`source <https://docs.google.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/edit>`__)
+(`来源 <https://docs.google.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/edit>`__)
 
-
-Performance considerations
+性能考虑
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Write
+写入
 ^^^^^
 
-A stripe spans across all drives in the array. A one block write will write the stripe part onto each disk.
-A RAIDZ vdev has a write IOPS of the slowest disk in the array in the worst case because the write operation of all stripe parts must be completed on each disk.
+一个条带跨越阵列中的所有驱动器。一个块的写入将把条带部分写入每个磁盘。
+在最坏的情况下，RAIDZ vdev 的写入 IOPS 是阵列中最慢磁盘的 IOPS，因为所有条带部分的写入操作必须在每个磁盘上完成。

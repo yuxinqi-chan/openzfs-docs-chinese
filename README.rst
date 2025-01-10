@@ -4,7 +4,7 @@
 OpenZFS Documentation
 =====================
 
-Public link: https://openzfs.github.io/openzfs-docs/
+Public link: https://yuxinqi-chan.github.io/openzfs-docs-chinese/
 
 Building Locally
 ----------------
