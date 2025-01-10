@@ -1,132 +1,85 @@
-Checksums and Their Use in ZFS
+校验和及其在 ZFS 中的应用
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-End-to-end checksums are a key feature of ZFS and an important
-differentiator for ZFS over other RAID implementations and filesystems.
-Advantages of end-to-end checksums include:
+端到端校验和是 ZFS 的一个关键特性，也是 ZFS 区别于其他 RAID 实现和文件系统的重要特点。端到端校验和的优势包括：
 
--  detects data corruption upon reading from media
--  blocks that are detected as corrupt are automatically repaired if
-   possible, by using the RAID protection in suitably configured pools,
-   or redundant copies (see the zfs ``copies`` property)
--  periodic scrubs can check data to detect and repair latent media
-   degradation (bit rot) and corruption from other sources
--  checksums on ZFS replication streams, ``zfs send`` and
-   ``zfs receive``, ensure the data received is not corrupted by
-   intervening storage or transport mechanisms
+- 在从介质读取数据时检测数据损坏
+- 如果可能，检测到损坏的块会自动修复，通过适当配置的池中的 RAID 保护或冗余副本（参见 zfs 的 ``copies`` 属性）
+- 定期擦洗可以检查数据，以检测和修复潜在的介质退化（位腐烂）和其他来源的损坏
+- ZFS 复制流（``zfs send`` 和 ``zfs receive``）上的校验和确保接收的数据不会被中间存储或传输机制损坏
 
-Checksum Algorithms
+校验和算法
 ^^^^^^^^^^^^^^^^^^^
 
-The checksum algorithms in ZFS can be changed for datasets (filesystems
-or volumes). The checksum algorithm used for each block is stored in the
-block pointer (metadata). The block checksum is calculated when the
-block is written, so changing the algorithm only affects writes
-occurring after the change.
+ZFS 中的校验和算法可以针对数据集（文件系统或卷）进行更改。每个块使用的校验和算法存储在块指针（元数据）中。块的校验和在写入块时计算，因此更改算法仅影响更改后发生的写入操作。
 
-The checksum algorithm for a dataset can be changed by setting the
-``checksum`` property:
+可以通过设置 ``checksum`` 属性来更改数据集的校验和算法：
 
 .. code:: bash
 
-   zfs set checksum=sha256 pool_name/dataset_name
+   zfs set checksum=sha256 池名/数据集名
 
 +-----------+--------------+------------------------+-------------------------+
-| Checksum  | Ok for dedup | Compatible with        | Notes                   |
-|           | and nopwrite?| other ZFS              |                         |
-|           |              | implementations?       |                         |
+| 校验和    | 适用于去重   | 与其他 ZFS             | 备注                    |
+|           | 和 nopwrite? | 实现兼容？             |                         |
 +===========+==============+========================+=========================+
-| on        | see notes    | yes                    | ``on`` is a             |
-|           |              |                        | short hand for          |
-|           |              |                        | ``fletcher4``           |
-|           |              |                        | for non-deduped         |
-|           |              |                        | datasets and            |
-|           |              |                        | ``sha256`` for          |
-|           |              |                        | deduped                 |
-|           |              |                        | datasets                |
+| on        | 参见备注     | 是                     | ``on`` 是               |
+|           |              |                        | ``fletcher4`` 的简写    |
+|           |              |                        | 用于非去重数据集，      |
+|           |              |                        | 以及 ``sha256`` 用于    |
+|           |              |                        | 去重数据集              |
 +-----------+--------------+------------------------+-------------------------+
-| off       | no           | yes                    | Do not do use           |
+| off       | 否           | 是                     | 不要使用                |
 |           |              |                        | ``off``                 |
 +-----------+--------------+------------------------+-------------------------+
-| fletcher2 | no           | yes                    | Deprecated              |
-|           |              |                        | implementation          |
-|           |              |                        | of Fletcher             |
-|           |              |                        | checksum, use           |
-|           |              |                        | ``fletcher4``           |
-|           |              |                        | instead                 |
+| fletcher2 | 否           | 是                     | 已弃用的 Fletcher       |
+|           |              |                        | 校验和实现，请使用      |
+|           |              |                        | ``fletcher4`` 代替      |
 +-----------+--------------+------------------------+-------------------------+
-| fletcher4 | no           | yes                    | Fletcher                |
-|           |              |                        | algorithm, also         |
-|           |              |                        | used for                |
-|           |              |                        | ``zfs send``            |
-|           |              |                        | streams                 |
+| fletcher4 | 否           | 是                     | Fletcher 算法，         |
+|           |              |                        | 也用于                  |
+|           |              |                        | ``zfs send`` 流         |
 +-----------+--------------+------------------------+-------------------------+
-| sha256    | yes          | yes                    | Default for             |
-|           |              |                        | deduped                 |
-|           |              |                        | datasets                |
+| sha256    | 是           | 是                     | 去重数据集的            |
+|           |              |                        | 默认算法                |
 +-----------+--------------+------------------------+-------------------------+
-| noparity  | no           | yes                    | Do not use              |
+| noparity  | 否           | 是                     | 不要使用                |
 |           |              |                        | ``noparity``            |
 +-----------+--------------+------------------------+-------------------------+
-| sha512    | yes          | requires pool          | salted                  |
-|           |              | feature                | ``sha512``              |
-|           |              | ``org.illumos:sha512`` | currently not           |
-|           |              |                        | supported for           |
-|           |              |                        | any filesystem          |
-|           |              |                        | on the boot             |
-|           |              |                        | pools                   |
+| sha512    | 是           | 需要池特性             | 加盐的 ``sha512``，     |
+|           |              | ``org.illumos:sha512`` | 目前不支持任何          |
+|           |              |                        | 启动池上的文件系统      |
 +-----------+--------------+------------------------+-------------------------+
-| skein     | yes          | requires pool          | salted                  |
-|           |              | feature                | ``skein``               |
-|           |              | ``org.illumos:skein``  | currently not           |
-|           |              |                        | supported for           |
-|           |              |                        | any filesystem          |
-|           |              |                        | on the boot             |
-|           |              |                        | pools                   |
+| skein     | 是           | 需要池特性             | 加盐的 ``skein``，      |
+|           |              | ``org.illumos:skein``  | 目前不支持任何          |
+|           |              |                        | 启动池上的文件系统      |
 +-----------+--------------+------------------------+-------------------------+
-| edonr     | see notes    | requires pool          | salted                  |
-|           |              | feature                | ``edonr``               |
-|           |              | ``org.illumos:edonr``  | currently not           |
-|           |              |                        | supported for           |
-|           |              |                        | any filesystem          |
-|           |              |                        | on the boot             |
-|           |              |                        | pools                   |
+| edonr     | 参见备注     | 需要池特性             | 加盐的 ``edonr``，      |
+|           |              | ``org.illumos:edonr``  | 目前不支持任何          |
+|           |              |                        | 启动池上的文件系统      |
 |           |              |                        |                         |
-|           |              |                        | In an abundance of      |
-|           |              |                        | caution, Edon-R requires|
-|           |              |                        | verification when used  |
-|           |              |                        | with dedup, so it will  |
-|           |              |                        | automatically use       |
-|           |              |                        | ``verify``.             |
-|           |              |                        |                         |
+|           |              |                        | 出于谨慎考虑，Edon-R    |
+|           |              |                        | 在与去重一起使用时需要  |
+|           |              |                        | 验证，因此它将自动使用  |
+|           |              |                        | ``verify``。            |
 +-----------+--------------+------------------------+-------------------------+
-| blake3    | yes          | requires pool          | salted                  |
-|           |              | feature                | ``blake3``              |
-|           |              | ``org.openzfs:blake3`` | currently not           |
-|           |              |                        | supported for           |
-|           |              |                        | any filesystem          |
-|           |              |                        | on the boot             |
-|           |              |                        | pools                   |
+| blake3    | 是           | 需要池特性             | 加盐的 ``blake3``，     |
+|           |              | ``org.openzfs:blake3`` | 目前不支持任何          |
+|           |              |                        | 启动池上的文件系统      |
 +-----------+--------------+------------------------+-------------------------+
 
-Checksum Accelerators
+校验和加速器
 ^^^^^^^^^^^^^^^^^^^^^
 
-ZFS has the ability to offload checksum operations to the Intel
-QuickAssist Technology (QAT) adapters.
+ZFS 能够将校验和操作卸载到 Intel QuickAssist Technology (QAT) 适配器上。
 
-Checksum Microbenchmarks
+校验和微基准测试
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Some ZFS features use microbenchmarks when the ``zfs.ko`` kernel module
-is loaded to determine the optimal algorithm for checksums. The results
-of the microbenchmarks are observable in the ``/proc/spl/kstat/zfs``
-directory. The winning algorithm is reported as the "fastest" and
-becomes the default. The default can be overridden by setting zfs module
-parameters.
+某些 ZFS 功能在加载 ``zfs.ko`` 内核模块时使用微基准测试来确定校验和的最佳算法。微基准测试的结果可以在 ``/proc/spl/kstat/zfs`` 目录中观察到。获胜的算法被报告为“最快的”，并成为默认算法。可以通过设置 zfs 模块参数来覆盖默认值。
 
 ========= ==================================== ========================
-Checksum  Results Filename                     ``zfs`` module parameter
+校验和    结果文件名                           ``zfs`` 模块参数
 ========= ==================================== ========================
 Fletcher4 /proc/spl/kstat/zfs/fletcher_4_bench zfs_fletcher_4_impl
 all-other /proc/spl/kstat/zfs/chksum_bench     zfs_blake3_impl,
@@ -134,9 +87,7 @@ all-other /proc/spl/kstat/zfs/chksum_bench     zfs_blake3_impl,
                                                zfs_sha512_impl
 ========= ==================================== ========================
 
-Disabling Checksums
+禁用校验和
 ^^^^^^^^^^^^^^^^^^^
 
-While it may be tempting to disable checksums to improve CPU
-performance, it is widely considered by the ZFS community to be an
-extrodinarily bad idea. Don't disable checksums.
+虽然禁用校验和可能会提高 CPU 性能，但 ZFS 社区普遍认为这是一个极其糟糕的想法。不要禁用校验和。
