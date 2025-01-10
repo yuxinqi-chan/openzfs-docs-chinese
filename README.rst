@@ -33,4 +33,3 @@ Build
    cd docs
    make html
    # HTML files will be generated in: _build/html
-
