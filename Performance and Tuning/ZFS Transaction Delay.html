@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZFS 事务延迟 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ZFS I/O (ZIO) 调度器" href="ZIO%20Scheduler.html" />
+    <link rel="prev" title="工作负载调优" href="Workload%20Tuning.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">性能与调优</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Async%20Write.html">异步写入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hardware.html">硬件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Module%20Parameters.html">Module Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Workload%20Tuning.html">工作负载调优</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ZFS 事务延迟</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ZIO%20Scheduler.html">ZFS I/O (ZIO) 调度器</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">性能与调优</a></li>
+      <li class="breadcrumb-item active">ZFS 事务延迟</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Performance and Tuning/ZFS Transaction Delay.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zfs">
+<h1>ZFS 事务延迟<a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h1>
+<p>当后端存储无法适应传入写入的速率时，ZFS 写入操作会被延迟。这个延迟过程被称为 ZFS 写入节流。</p>
+<p>如果已经有一个写入事务在等待，延迟是相对于该事务完成等待的时间计算的。因此，计算的延迟时间与并发执行事务的线程数量无关。</p>
+<p>如果只有一个等待者，延迟是相对于事务开始的时间计算的，而不是当前时间。这为事务“已经服务的时间”提供了信用。例如，如果一个写入事务需要先读取间接块，则延迟在事务开始时计算，就在间接块读取之前。</p>
+<p>事务的最小时间计算如下：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">min_time</span> <span class="o">=</span> <span class="n">zfs_delay_scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">dirty</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="nb">max</span> <span class="o">-</span> <span class="n">dirty</span><span class="p">)</span>
+<span class="n">min_time</span> <span class="n">然后被限制在</span> <span class="mi">100</span> <span class="n">毫秒</span>
+</pre></div>
+</div>
+<p>延迟有两个可以通过可调参数调整的自由度：</p>
+<ol class="arabic simple">
+<li><p>开始延迟的脏数据百分比由 zfs_delay_min_dirty_percent 定义。这通常位于或高于 zfs_vdev_async_write_active_max_dirty_percent，以便在全速写入无法跟上传入写入速率后发生延迟。</p></li>
+<li><p>曲线的比例由 zfs_delay_scale 定义。粗略地说，这个变量决定了曲线中点的延迟量。</p></li>
+</ol>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delay</span>
+ <span class="mi">10</span><span class="n">ms</span> <span class="o">+-------------------------------------------------------------*+</span>
+      <span class="o">|</span>                                                             <span class="o">*|</span>
+  <span class="mi">9</span><span class="n">ms</span> <span class="o">+</span>                                                             <span class="o">*+</span>
+      <span class="o">|</span>                                                             <span class="o">*|</span>
+  <span class="mi">8</span><span class="n">ms</span> <span class="o">+</span>                                                             <span class="o">*+</span>
+      <span class="o">|</span>                                                            <span class="o">*</span> <span class="o">|</span>
+  <span class="mi">7</span><span class="n">ms</span> <span class="o">+</span>                                                            <span class="o">*</span> <span class="o">+</span>
+      <span class="o">|</span>                                                            <span class="o">*</span> <span class="o">|</span>
+  <span class="mi">6</span><span class="n">ms</span> <span class="o">+</span>                                                            <span class="o">*</span> <span class="o">+</span>
+      <span class="o">|</span>                                                            <span class="o">*</span> <span class="o">|</span>
+  <span class="mi">5</span><span class="n">ms</span> <span class="o">+</span>                                                           <span class="o">*</span>  <span class="o">+</span>
+      <span class="o">|</span>                                                           <span class="o">*</span>  <span class="o">|</span>
+  <span class="mi">4</span><span class="n">ms</span> <span class="o">+</span>                                                           <span class="o">*</span>  <span class="o">+</span>
+      <span class="o">|</span>                                                           <span class="o">*</span>  <span class="o">|</span>
+  <span class="mi">3</span><span class="n">ms</span> <span class="o">+</span>                                                          <span class="o">*</span>   <span class="o">+</span>
+      <span class="o">|</span>                                                          <span class="o">*</span>   <span class="o">|</span>
+  <span class="mi">2</span><span class="n">ms</span> <span class="o">+</span>                                              <span class="p">(</span><span class="n">midpoint</span><span class="p">)</span> <span class="o">*</span>    <span class="o">+</span>
+      <span class="o">|</span>                                                  <span class="o">|</span>    <span class="o">**</span>     <span class="o">|</span>
+  <span class="mi">1</span><span class="n">ms</span> <span class="o">+</span>                                                  <span class="n">v</span> <span class="o">***</span>       <span class="o">+</span>
+      <span class="o">|</span>             <span class="n">zfs_delay_scale</span> <span class="o">----------&gt;</span>     <span class="o">********</span>         <span class="o">|</span>
+    <span class="mi">0</span> <span class="o">+-------------------------------------*********----------------+</span>
+      <span class="mi">0</span><span class="o">%</span>                    <span class="o">&lt;-</span> <span class="n">zfs_dirty_data_max</span> <span class="o">-&gt;</span>               <span class="mi">100</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>请注意，由于延迟是添加到最近事务的剩余未完成时间上的，延迟实际上是 IOPS 的倒数。这里的中点 500 微秒转换为 2000 IOPS。选择曲线的形状使得在曲线的前 3/4 部分，脏数据量的微小变化会产生相对较小的延迟差异。</p>
+<p>当延迟量以对数刻度表示时，效果更容易理解：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delay</span>
+<span class="mi">100</span><span class="n">ms</span> <span class="o">+-------------------------------------------------------------++</span>
+      <span class="o">+</span>                                                              <span class="o">+</span>
+      <span class="o">|</span>                                                              <span class="o">|</span>
+      <span class="o">+</span>                                                             <span class="o">*+</span>
+ <span class="mi">10</span><span class="n">ms</span> <span class="o">+</span>                                                             <span class="o">*+</span>
+      <span class="o">+</span>                                                           <span class="o">**</span> <span class="o">+</span>
+      <span class="o">|</span>                                              <span class="p">(</span><span class="n">midpoint</span><span class="p">)</span>  <span class="o">**</span>  <span class="o">|</span>
+      <span class="o">+</span>                                                  <span class="o">|</span>     <span class="o">**</span>    <span class="o">+</span>
+  <span class="mi">1</span><span class="n">ms</span> <span class="o">+</span>                                                  <span class="n">v</span> <span class="o">****</span>      <span class="o">+</span>
+      <span class="o">+</span>             <span class="n">zfs_delay_scale</span> <span class="o">----------&gt;</span>        <span class="o">*****</span>         <span class="o">+</span>
+      <span class="o">|</span>                                             <span class="o">****</span>             <span class="o">|</span>
+      <span class="o">+</span>                                          <span class="o">****</span>                <span class="o">+</span>
+<span class="mi">100</span><span class="n">us</span> <span class="o">+</span>                                        <span class="o">**</span>                    <span class="o">+</span>
+      <span class="o">+</span>                                       <span class="o">*</span>                      <span class="o">+</span>
+      <span class="o">|</span>                                      <span class="o">*</span>                       <span class="o">|</span>
+      <span class="o">+</span>                                     <span class="o">*</span>                        <span class="o">+</span>
+ <span class="mi">10</span><span class="n">us</span> <span class="o">+</span>                                     <span class="o">*</span>                        <span class="o">+</span>
+      <span class="o">+</span>                                                              <span class="o">+</span>
+      <span class="o">|</span>                                                              <span class="o">|</span>
+      <span class="o">+</span>                                                              <span class="o">+</span>
+      <span class="o">+--------------------------------------------------------------+</span>
+      <span class="mi">0</span><span class="o">%</span>                    <span class="o">&lt;-</span> <span class="n">zfs_dirty_data_max</span> <span class="o">-&gt;</span>               <span class="mi">100</span><span class="o">%</span>
+</pre></div>
+</div>
+<p>请注意，只有当脏数据量接近其限制时，延迟才开始迅速增加。适当调优的系统的目标应该是通过首先确保为 I/O 调度器设置适当的限制以达到后端存储的最佳吞吐量，然后通过更改 zfs_delay_scale 的值来增加曲线的陡度，从而将脏数据量保持在该范围之外。</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Workload%20Tuning.html" class="btn btn-neutral float-left" title="工作负载调优" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ZIO%20Scheduler.html" class="btn btn-neutral float-right" title="ZFS I/O (ZIO) 调度器" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

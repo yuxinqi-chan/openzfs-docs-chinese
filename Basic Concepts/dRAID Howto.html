@@ -1,0 +1,273 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>dRAID &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Man Pages" href="../man/index.html" />
+    <link rel="prev" title="故障排除" href="Troubleshooting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">基本概念</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Checksums.html">校验和及其在 ZFS 中的应用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Feature%20Flags.html">功能标志</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RAIDZ.html">RAIDZ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Troubleshooting.html">故障排除</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dRAID</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">简介</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#draid-vdev">创建 dRAID vdev</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">重建到分布式热备盘</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">重新平衡</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">基本概念</a></li>
+      <li class="breadcrumb-item active">dRAID</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Basic Concepts/dRAID Howto.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="draid">
+<h1>dRAID<a class="headerlink" href="#draid" title="Permalink to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>本页面描述了 OpenZFS 2.1.0 版本中添加的功能，该功能未包含在 OpenZFS 2.0.0 版本中。</p>
+</div>
+<section id="id1">
+<h2>简介<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="https://docs.google.com/presentation/d/1uo0nBfY84HIhEqGWEx-Tbm8fPbJKtIP3ICo4toOPcJo/edit">dRAID</a> 是 raidz 的一种变体，它提供了集成的分布式热备盘，能够在保留 raidz 优点的同时实现更快的重建速度。dRAID vdev 由多个内部的 raidz 组构成，每个组包含 D 个数据设备和 P 个校验设备。这些组分布在所有子设备上，以充分利用可用的磁盘性能。这被称为奇偶校验分散（parity declustering），它一直是研究的热点领域。下图是简化的，但它有助于说明 dRAID 和 raidz 之间的关键区别。</p>
+<p><img alt="draid1" src="../_images/raidz_draid.png" /></p>
+<p>此外，dRAID vdev 必须以某种方式对其子 vdev 进行洗牌，以确保无论哪个驱动器发生故障，重建 IO（包括读取和写入）都会均匀分布在所有幸存的驱动器上。这是通过使用精心选择的预计算排列映射来实现的。这样做的好处是既保持了池创建的快速性，又确保了映射不会被损坏或丢失。</p>
+<p>dRAID 与 raidz 的另一个区别是它使用固定的条带宽度（必要时用零填充）。这使得 dRAID vdev 可以按顺序重建，但固定条带宽度会显著影响可用容量和 IOPS。例如，默认的 D=8 和 4k 磁盘扇区的最小分配大小为 32k。如果使用压缩，这种相对较大的分配大小可能会降低有效压缩比。当使用 ZFS 卷和 dRAID 时，默认的 volblocksize 属性会增加以考虑分配大小。如果 dRAID 池将存储大量小数据块，建议添加一个镜像的特殊 vdev 来存储这些数据块。</p>
+<p>在 IO/s 方面，性能与 raidz 相似，因为对于任何读取操作，都必须访问所有 D 个数据磁盘。交付的随机 IOPS 可以合理地近似为 floor((N-S)/(D+P))*&lt;单盘 IOPS&gt;。</p>
+<p>总之，dRAID 可以提供与 raidz 相同级别的冗余和性能，同时还提供了快速的集成分布式热备盘。</p>
+</section>
+<section id="draid-vdev">
+<h2>创建 dRAID vdev<a class="headerlink" href="#draid-vdev" title="Permalink to this heading"></a></h2>
+<p>通过使用 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">create</span></code> 命令并枚举应使用的磁盘，可以像创建其他 vdev 一样创建 dRAID vdev。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># zpool create &lt;pool&gt; draid[1,2,3] &lt;vdevs...&gt;</span>
+</pre></div>
+</div>
+<p>与 raidz 类似，奇偶校验级别在 <code class="docutils literal notranslate"><span class="pre">draid</span></code> vdev 类型后立即指定。然而，与 raidz 不同的是，可以指定额外的冒号分隔选项。其中最重要的是 <code class="docutils literal notranslate"><span class="pre">:&lt;spares&gt;s</span></code> 选项，它控制要创建的分布式热备盘的数量。默认情况下，不创建热备盘。可以指定 <code class="docutils literal notranslate"><span class="pre">:&lt;data&gt;d</span></code> 选项来设置每个 RAID 条带中使用的数据设备数量（D+P）。如果未指定，则会选择合理的默认值。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># zpool create &lt;pool&gt; draid[&lt;parity&gt;][:&lt;data&gt;d][:&lt;children&gt;c][:&lt;spares&gt;s] &lt;vdevs...&gt;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>parity</strong> - 奇偶校验级别（1-3）。默认为 1。</p></li>
+<li><p><strong>data</strong> - 每个冗余组中的数据设备数量。通常，较小的 D 值会增加 IOPS，提高压缩比，并加快重建速度，但会牺牲总可用容量。默认为 8，除非 N-P-S 小于 8。</p></li>
+<li><p><strong>children</strong> - 预期的子设备数量。在列出大量设备时作为交叉检查很有用。当提供的子设备数量不同时，会返回错误。</p></li>
+<li><p><strong>spares</strong> - 分布式热备盘的数量。默认为零。</p></li>
+</ul>
+<p>例如，要创建一个具有 4+1 冗余和单个分布式热备盘的 11 磁盘 dRAID 池，命令如下：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># zpool create tank draid:4d:1s:11c /dev/sd[a-k]</span>
+<span class="c1"># zpool status tank</span>
+
+  <span class="n">pool</span><span class="p">:</span> <span class="n">tank</span>
+ <span class="n">state</span><span class="p">:</span> <span class="n">ONLINE</span>
+<span class="n">config</span><span class="p">:</span>
+
+        <span class="n">NAME</span>                  <span class="n">STATE</span>     <span class="n">READ</span> <span class="n">WRITE</span> <span class="n">CKSUM</span>
+        <span class="n">tank</span>                  <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+          <span class="n">draid1</span><span class="p">:</span><span class="mi">4</span><span class="n">d</span><span class="p">:</span><span class="mi">11</span><span class="n">c</span><span class="p">:</span><span class="mi">1</span><span class="n">s</span><span class="o">-</span><span class="mi">0</span>  <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sda</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdb</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdc</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdd</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sde</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdf</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdg</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdh</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdi</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdj</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+            <span class="n">sdk</span>               <span class="n">ONLINE</span>       <span class="mi">0</span>     <span class="mi">0</span>     <span class="mi">0</span>
+        <span class="n">spares</span>
+          <span class="n">draid1</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="mi">0</span>          <span class="n">AVAIL</span>
+</pre></div>
+</div>
+<p>请注意，dRAID vdev 名称 <code class="docutils literal notranslate"><span class="pre">draid1:4d:11c:1s</span></code> 完全描述了配置，并且列出了所有属于 dRAID 的磁盘。此外，逻辑分布式热备盘显示为可用的备用磁盘。</p>
+</section>
+<section id="id2">
+<h2>重建到分布式热备盘<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>dRAID 的主要优势之一是它支持顺序重建和传统修复重建。当执行顺序重建到分布式热备盘时，性能会随着磁盘数量除以条带宽度（D+P）而扩展。这可以大大减少重建时间，并在通常时间的一小部分内恢复完全冗余。例如，下图显示了基于 90 个 HDD 的 dRAID 在 90% 容量下的顺序重建时间（以小时为单位）。</p>
+<p><img alt="draid-resilver" src="../_images/draid-resilver-hours.png" /></p>
+<p>当使用 dRAID 和分布式热备盘时，处理故障磁盘的过程与使用传统热备盘的 raidz 几乎相同。当检测到磁盘故障时，ZFS 事件守护进程（ZED）将开始重建到备用磁盘（如果有）。唯一的区别是，对于 dRAID，会启动顺序重建，而对于 raidz，必须使用修复重建。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># echo offline &gt;/sys/block/sdg/device/state
+# zpool replace -s tank sdg draid1-0-0
+# zpool status
+
+  pool: tank
+ state: DEGRADED
+status: 一个或多个设备当前正在重建中。池将继续运行，可能处于降级状态。
+action: 等待重建完成。
+  scan: 重建 (draid1:4d:11c:1s-0) 自 2020 年 11 月 24 日 星期二 14:34:25 开始
+        3.51T 已扫描，速度为 13.4G/s，1.59T 已发出，速度为 6.07G/s，总计 6.13T
+        326G 已重建，完成 57.17%，预计剩余时间 00:03:21
+config:
+
+        NAME                  STATE     READ WRITE CKSUM
+        tank                  DEGRADED     0     0     0
+          draid1:4d:11c:1s-0  DEGRADED     0     0     0
+            sda               ONLINE       0     0     0  (重建中)
+            sdb               ONLINE       0     0     0  (重建中)
+            sdc               ONLINE       0     0     0  (重建中)
+            sdd               ONLINE       0     0     0  (重建中)
+            sde               ONLINE       0     0     0  (重建中)
+            sdf               ONLINE       0     0     0  (重建中)
+            spare-6           DEGRADED     0     0     0
+              sdg             UNAVAIL      0     0     0
+              draid1-0-0      ONLINE       0     0     0  (重建中)
+            sdh               ONLINE       0     0     0  (重建中)
+            sdi               ONLINE       0     0     0  (重建中)
+            sdj               ONLINE       0     0     0  (重建中)
+            sdk               ONLINE       0     0     0  (重建中)
+        spares
+          draid1-0-0          INUSE     当前正在使用
+</pre></div>
+</div>
+<p>虽然两种类型的重建都能达到相同的目标，但值得花点时间总结一下关键区别。</p>
+<ul class="simple">
+<li><p>传统的修复重建会扫描整个块树。这意味着每个块的校验和在修复时可用，并且可以立即验证。缺点是这会创建一个随机读取工作负载，不利于性能。</p></li>
+<li><p>顺序重建则扫描空间映射，以确定哪些空间已分配以及哪些空间必须修复。此重建过程不受块边界限制，可以顺序读取磁盘并使用较大的 I/O 进行修复。这种性能改进的代价是在重建期间无法验证块校验和。因此，在顺序重建完成后会启动一次 scrub 来验证校验和。</p></li>
+</ul>
+<p>有关顺序重建和修复重建之间差异的更深入解释，请查看这些在 OpenZFS 开发者峰会上展示的 <a href="#id5"><span class="problematic" id="id6">`顺序重建`_</span></a> 幻灯片。</p>
+</section>
+<section id="id3">
+<h2>重新平衡<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>通过简单地用新驱动器替换任何故障驱动器，可以再次使分布式备用空间可用。此过程称为重新平衡，本质上是一次重建。在执行重新平衡时，建议使用修复重建，因为池不再处于降级状态。这确保在重建到新磁盘时验证所有校验和，并消除了随后对池执行 scrub 的需要。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span># zpool replace tank sdg sdl
+# zpool status
+
+  pool: tank
+ state: DEGRADED
+status: 一个或多个设备当前正在重建中。池将继续运行，可能处于降级状态。
+action: 等待重建完成。
+  scan: 重建自 2020 年 11 月 24 日 星期二 14:45:16 开始
+        6.13T 已扫描，速度为 7.82G/s，6.10T 已发出，速度为 7.78G/s，总计 6.13T
+        565G 已重建，完成 99.44%，预计剩余时间 00:00:04
+config:
+
+        NAME                  STATE     READ WRITE CKSUM
+        tank                  DEGRADED     0     0     0
+          draid1:4d:11c:1s-0  DEGRADED     0     0     0
+            sda               ONLINE       0     0     0  (重建中)
+            sdb               ONLINE       0     0     0  (重建中)
+            sdc               ONLINE       0     0     0  (重建中)
+            sdd               ONLINE       0     0     0  (重建中)
+            sde               ONLINE       0     0     0  (重建中)
+            sdf               ONLINE       0     0     0  (重建中)
+            spare-6           DEGRADED     0     0     0
+              replacing-0     DEGRADED     0     0     0
+                sdg           UNAVAIL      0     0     0
+                sdl           ONLINE       0     0     0  (重建中)
+              draid1-0-0      ONLINE       0     0     0  (重建中)
+            sdh               ONLINE       0     0     0  (重建中)
+            sdi               ONLINE       0     0     0  (重建中)
+            sdj               ONLINE       0     0     0  (重建中)
+            sdk               ONLINE       0     0     0  (重建中)
+        spares
+       draid1-0-0          INUSE     当前正在使用
+</pre></div>
+</div>
+<p>重建完成后，分布式热备盘再次可用，池已恢复到正常的健康状态。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Troubleshooting.html" class="btn btn-neutral float-left" title="故障排除" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../man/index.html" class="btn btn-neutral float-right" title="Man Pages" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

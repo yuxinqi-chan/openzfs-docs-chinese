@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="邮件列表" href="Mailing%20Lists.html" />
+    <link rel="prev" title="管理员文档" href="Admin%20Documentation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">项目和社区</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Admin%20Documentation.html">管理员文档</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">FAQ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#openzfs">什么是 OpenZFS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">硬件要求</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zfs-ecc">ZFS 必须使用 ECC 内存吗？</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">安装</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">支持的架构</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux">支持的 Linux 内核</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#bit-vs-64-bit-systems">32 位与 64 位系统</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zfs">从 ZFS 启动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dev-linux">创建池时选择 /dev/ 名称（Linux）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#etc-zfs-vdev-id-conf">设置 /etc/zfs/vdev_id.conf 文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dev">更改现有池的 /dev/ 名称</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#etc-zfs-zpool-cache">/etc/zfs/zpool.cache 文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#generating-a-new-etczfszpoolcache-file">生成新的 /etc/zfs/zpool.cache 文件</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">发送和接收流</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#hole-birth">hole_birth 错误</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8">发送大块数据</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#ceph-zfs">CEPH/ZFS</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id9">ZFS 配置</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ceph-ceph-conf">CEPH 配置 (ceph.conf)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10">其他一般性指南</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id11">性能考虑</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id12">高级格式磁盘</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#zvol">ZVOL 使用空间大于预期</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#linux-zvol">在 Linux 上使用 zvol 作为交换设备</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#xen-hypervisor-xen-dom0-zfs-linux">在 Xen Hypervisor 或 Xen Dom0 上使用 ZFS（Linux）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#udisks2-zvol-dev-mapper-linux">udisks2 为 zvol 创建 /dev/mapper/ 条目（Linux）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id13">许可</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id14">报告问题</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id15">OpenZFS 有行为准则吗？</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Mailing%20Lists.html">邮件列表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Signing%20Keys.html">签名密钥</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/openzfs/zfs/issues">Issue Tracker</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/openzfs/zfs/releases">Releases</a></li>
+<li class="toctree-l2"><a class="reference external" href="https://github.com/openzfs/zfs/milestones">Roadmap</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">项目和社区</a></li>
+      <li class="breadcrumb-item active">FAQ</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Project and Community/FAQ.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="faq">
+<h1>FAQ<a class="headerlink" href="#faq" title="Permalink to this heading"></a></h1>
+<nav class="contents local" id="id1">
+<p class="topic-title">目录</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#openzfs" id="id16">什么是 OpenZFS</a></p></li>
+<li><p><a class="reference internal" href="#id2" id="id17">硬件要求</a></p></li>
+<li><p><a class="reference internal" href="#zfs-ecc" id="id18">ZFS 必须使用 ECC 内存吗？</a></p></li>
+<li><p><a class="reference internal" href="#id3" id="id19">安装</a></p></li>
+<li><p><a class="reference internal" href="#id4" id="id20">支持的架构</a></p></li>
+<li><p><a class="reference internal" href="#linux" id="id21">支持的 Linux 内核</a></p></li>
+<li><p><a class="reference internal" href="#bit-vs-64-bit-systems" id="id22">32 位与 64 位系统</a></p></li>
+<li><p><a class="reference internal" href="#zfs" id="id23">从 ZFS 启动</a></p></li>
+<li><p><a class="reference internal" href="#dev-linux" id="id24">创建池时选择 /dev/ 名称（Linux）</a></p></li>
+<li><p><a class="reference internal" href="#etc-zfs-vdev-id-conf" id="id25">设置 /etc/zfs/vdev_id.conf 文件</a></p></li>
+<li><p><a class="reference internal" href="#dev" id="id26">更改现有池的 /dev/ 名称</a></p></li>
+<li><p><a class="reference internal" href="#etc-zfs-zpool-cache" id="id27">/etc/zfs/zpool.cache 文件</a></p></li>
+<li><p><a class="reference internal" href="#generating-a-new-etczfszpoolcache-file" id="id28">生成新的 /etc/zfs/zpool.cache 文件</a></p></li>
+<li><p><a class="reference internal" href="#id7" id="id29">发送和接收流</a></p>
+<ul>
+<li><p><a class="reference internal" href="#hole-birth" id="id30">hole_birth 错误</a></p></li>
+<li><p><a class="reference internal" href="#id8" id="id31">发送大块数据</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#ceph-zfs" id="id32">CEPH/ZFS</a></p>
+<ul>
+<li><p><a class="reference internal" href="#id9" id="id33">ZFS 配置</a></p></li>
+<li><p><a class="reference internal" href="#ceph-ceph-conf" id="id34">CEPH 配置 (ceph.conf)</a></p></li>
+<li><p><a class="reference internal" href="#id10" id="id35">其他一般性指南</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#id11" id="id36">性能考虑</a></p></li>
+<li><p><a class="reference internal" href="#id12" id="id37">高级格式磁盘</a></p></li>
+<li><p><a class="reference internal" href="#zvol" id="id38">ZVOL 使用空间大于预期</a></p></li>
+<li><p><a class="reference internal" href="#linux-zvol" id="id39">在 Linux 上使用 zvol 作为交换设备</a></p></li>
+<li><p><a class="reference internal" href="#xen-hypervisor-xen-dom0-zfs-linux" id="id40">在 Xen Hypervisor 或 Xen Dom0 上使用 ZFS（Linux）</a></p></li>
+<li><p><a class="reference internal" href="#udisks2-zvol-dev-mapper-linux" id="id41">udisks2 为 zvol 创建 /dev/mapper/ 条目（Linux）</a></p></li>
+<li><p><a class="reference internal" href="#id13" id="id42">许可</a></p></li>
+<li><p><a class="reference internal" href="#id14" id="id43">报告问题</a></p></li>
+<li><p><a class="reference internal" href="#id15" id="id44">OpenZFS 有行为准则吗？</a></p></li>
+</ul>
+</nav>
+<section id="openzfs">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">什么是 OpenZFS</a><a class="headerlink" href="#openzfs" title="Permalink to this heading"></a></h2>
+<p>OpenZFS 是一个出色的存储平台，它集成了传统文件系统、卷管理等功能，并在所有发行版中提供一致的可靠性、功能和性能。有关 OpenZFS 的更多信息，请参阅 <a class="reference external" href="https://en.wikipedia.org/wiki/OpenZFS">OpenZFS 维基百科文章</a>。</p>
+</section>
+<section id="id2">
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">硬件要求</a><a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>由于 ZFS 最初是为 Sun Solaris 设计的，因此长期以来它被认为是为大型服务器和能够负担得起最强大硬件的公司设计的文件系统。但随着 ZFS 被移植到多个开源平台（BSD、Illumos 和 Linux——在“OpenZFS”组织下），这些要求已经降低。</p>
+<p>建议的硬件要求如下：</p>
+<ul class="simple">
+<li><p>ECC 内存。这并不是硬性要求，但强烈推荐。</p></li>
+<li><p>8GB 以上的内存以获得最佳性能。使用 2GB 或更少的内存也可以运行（并且有人这样做），但如果你使用去重功能，则需要更多内存。</p></li>
+</ul>
+</section>
+<section id="zfs-ecc">
+<h2><a class="toc-backref" href="#id18" role="doc-backlink">ZFS 必须使用 ECC 内存吗？</a><a class="headerlink" href="#zfs-ecc" title="Permalink to this heading"></a></h2>
+<p>在企业环境中，强烈建议为 OpenZFS 使用 ECC 内存，以确保最强的数据完整性保证。如果没有 ECC 内存，宇宙射线或故障内存可能导致罕见的随机位翻转，而这些错误可能无法被检测到。如果发生这种情况，OpenZFS（或任何其他文件系统）会将损坏的数据写入磁盘，并且无法自动检测到损坏。</p>
+<p>不幸的是，消费级硬件并不总是支持 ECC 内存。即使支持，ECC 内存也会更昂贵。对于家庭用户来说，ECC 内存带来的额外安全性可能无法证明其成本的合理性。你需要根据数据的保护需求来决定是否使用 ECC 内存。</p>
+</section>
+<section id="id3">
+<h2><a class="toc-backref" href="#id19" role="doc-backlink">安装</a><a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>OpenZFS 可用于 FreeBSD 和所有主要的 Linux 发行版。请参阅 wiki 的 <a class="reference internal" href="../Getting%20Started/index.html"><span class="doc">入门</span></a> 部分以获取安装说明的链接。如果你的发行版/操作系统未列出，你始终可以从最新的官方 <a class="reference external" href="https://github.com/openzfs/zfs/releases">tarball</a> 构建 OpenZFS。</p>
+</section>
+<section id="id4">
+<h2><a class="toc-backref" href="#id20" role="doc-backlink">支持的架构</a><a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<p>OpenZFS 定期为以下架构编译：aarch64、arm、ppc、ppc64、x86、x86_64。</p>
+</section>
+<section id="linux">
+<h2><a class="toc-backref" href="#id21" role="doc-backlink">支持的 Linux 内核</a><a class="headerlink" href="#linux" title="Permalink to this heading"></a></h2>
+<p>每个 OpenZFS 版本的 <a class="reference external" href="https://github.com/openzfs/zfs/releases">发布说明</a> 会包含支持的内核范围。点版本将根据需要标记，以支持从 <a class="reference external" href="https://www.kernel.org/">kernel.org</a> 获取的 <em>稳定</em> 内核。由于其在企业 Linux 发行版中的普及，支持的最旧内核是 2.6.32。</p>
+</section>
+<section id="bit-vs-64-bit-systems">
+<span id="id5"></span><h2><a class="toc-backref" href="#id22" role="doc-backlink">32 位与 64 位系统</a><a class="headerlink" href="#bit-vs-64-bit-systems" title="Permalink to this heading"></a></h2>
+<p>强烈建议使用 64 位内核。OpenZFS 可以构建用于 32 位系统，但可能会遇到稳定性问题。</p>
+<p>ZFS 最初是为 Solaris 内核开发的，该内核与某些 OpenZFS 平台在几个重要方面有所不同。对于 ZFS 来说，最重要的是 Solaris 内核通常大量使用虚拟地址空间。然而，在 Linux 内核中强烈不建议使用虚拟地址空间。这在 32 位架构上尤其明显，因为虚拟地址空间默认限制为 100M。在 64 位 Linux 内核上使用虚拟地址空间也不推荐，但由于地址空间比物理内存大得多，因此问题较小。</p>
+<p>如果你在 32 位系统上遇到虚拟内存限制，你将在系统日志中看到以下消息。你可以通过引导选项 <code class="docutils literal notranslate"><span class="pre">vmalloc=512M</span></code> 来增加虚拟地址空间大小。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">vmap</span> <span class="n">allocation</span> <span class="k">for</span> <span class="n">size</span> <span class="mi">4198400</span> <span class="n">failed</span><span class="p">:</span> <span class="n">use</span> <span class="n">vmalloc</span><span class="o">=&lt;</span><span class="n">size</span><span class="o">&gt;</span> <span class="n">to</span> <span class="n">increase</span> <span class="n">size</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>然而，即使进行了此更改，你的系统也可能不会完全稳定。对 32 位系统的适当支持取决于 OpenZFS 代码摆脱对虚拟内存的依赖。这需要一些时间才能正确完成，但这是 OpenZFS 的计划。此更改预计还将提高 OpenZFS 管理 ARC 缓存的效率，并允许与标准 Linux 页面缓存更紧密地集成。</p>
+</section>
+<section id="zfs">
+<h2><a class="toc-backref" href="#id23" role="doc-backlink">从 ZFS 启动</a><a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h2>
+<p>在 Linux 上从 ZFS 启动是可能的，许多人已经这样做了。有优秀的教程可用于 <a class="reference internal" href="../Getting%20Started/Debian/index.html"><span class="doc">Debian</span></a>、<a class="reference internal" href="../Getting%20Started/Ubuntu/index.html"><span class="doc">Ubuntu</span></a> 和 <a class="reference external" href="https://github.com/pendor/gentoo-zfs-install/tree/master/install">Gentoo</a>。</p>
+<p>在 FreeBSD 13+ 上，ZFS 启动是开箱即用的。</p>
+</section>
+<section id="dev-linux">
+<h2><a class="toc-backref" href="#id24" role="doc-backlink">创建池时选择 /dev/ 名称（Linux）</a><a class="headerlink" href="#dev-linux" title="Permalink to this heading"></a></h2>
+<p>创建 ZFS 池时可以使用不同的 /dev/ 名称。每个选项都有其优缺点，选择适合你的 ZFS 池的选项取决于你的需求。对于开发和测试，使用 /dev/sdX 命名是快速且简单的。典型的家庭服务器可能更喜欢 /dev/disk/by-id/ 命名，因为它简单且易于阅读。而具有多个控制器、机箱和交换机的大型配置可能更喜欢 /dev/disk/by-vdev 命名，以获得最大的控制权。但最终，如何选择识别你的磁盘取决于你。</p>
+<ul class="simple">
+<li><p><strong>/dev/sdX, /dev/hdX:</strong> 最适合开发/测试池</p>
+<ul>
+<li><p>摘要：顶级 /dev/ 名称是与其他 ZFS 实现保持一致的默认选项。它们在所有 Linux 发行版下都可用，并且常用。然而，由于它们不是持久的，因此应仅用于 ZFS 的开发/测试池。</p></li>
+<li><p>优点：这种方法适用于快速测试，名称简短，并且在所有 Linux 发行版上都可用。</p></li>
+<li><p>缺点：名称不是持久的，并且会根据磁盘检测的顺序而变化。添加或移除硬件很容易导致名称更改。然后你需要删除 zpool.cache 文件并使用新名称重新导入池。</p></li>
+<li><p>示例：<code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">create</span> <span class="pre">tank</span> <span class="pre">sda</span> <span class="pre">sdb</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>/dev/disk/by-id/:</strong> 最适合小型池（少于 10 个磁盘）</p>
+<ul>
+<li><p>摘要：此目录包含更具可读性的磁盘标识符。磁盘标识符通常由接口类型、供应商名称、型号、设备序列号和分区号组成。这种方法更友好，因为它简化了识别特定磁盘的过程。</p></li>
+<li><p>优点：适用于具有单个磁盘控制器的小型系统。由于名称是持久的且保证不会更改，因此磁盘如何连接到系统并不重要。你可以将它们全部取出，随机混合，然后放回系统中的任何位置，你的池仍将自动正确导入。</p></li>
+<li><p>缺点：基于物理位置的冗余组配置变得困难且容易出错。在许多个人虚拟机设置上不可靠，因为软件默认情况下不会生成持久的唯一名称。</p></li>
+<li><p>示例：<code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">create</span> <span class="pre">tank</span> <span class="pre">scsi-SATA_Hitachi_HTS7220071201DP1D10DGG6HMRP</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>/dev/disk/by-path/:</strong> 适用于大型池（超过 10 个磁盘）</p>
+<ul>
+<li><p>摘要：此方法使用包含系统中物理电缆布局的设备名称，这意味着特定磁盘绑定到特定位置。名称描述了 PCI 总线号、机箱名称和端口号。这允许在配置大型池时获得最大的控制权。</p></li>
+<li><p>优点：将存储拓扑编码在名称中不仅有助于在大型安装中定位磁盘，还允许你明确地在多个适配器或机箱上布局冗余组。</p></li>
+<li><p>缺点：这些名称冗长、繁琐且难以人工管理。</p></li>
+<li><p>示例：<code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">create</span> <span class="pre">tank</span> <span class="pre">pci-0000:00:1f.2-scsi-0:0:0:0</span> <span class="pre">pci-0000:00:1f.2-scsi-1:0:0:0</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>/dev/disk/by-vdev/:</strong> 最适合大型池（超过 10 个磁盘）</p>
+<ul>
+<li><p>摘要：此方法通过配置文件 /etc/zfs/vdev_id.conf 提供对设备命名的管理控制。JBOD 中的磁盘名称可以自动生成以反映其物理位置（通过机箱 ID 和插槽号）。名称也可以基于现有的 udev 设备链接手动分配，包括 /dev/disk/by-path 或 /dev/disk/by-id 中的链接。这允许你为磁盘选择自己独特且有意义的名称。这些名称将由所有 zfs 实用程序显示，因此可以用于简化大型复杂池的管理。有关更多详细信息，请参阅 vdev_id 和 vdev_id.conf 手册页。</p></li>
+<li><p>优点：此方法的主要优点是允许你选择有意义且易于阅读的名称。除此之外，优点取决于所采用的命名方法。如果名称是从物理路径派生的，则可以实现 /dev/disk/by-path 的优点。另一方面，基于驱动器标识符或 WWN 的别名具有与使用 /dev/disk/by-id 相同的优点。</p></li>
+<li><p>缺点：此方法依赖于为你的系统正确配置 /etc/zfs/vdev_id.conf 文件。要配置此文件，请参阅 <a class="reference external" href="#setting-up-the-etc-zfs-vdev-id-conf-file">设置 /etc/zfs/vdev_id.conf 文件</a> 部分。与优点一样，缺点也取决于所采用的命名方法。</p></li>
+<li><p>示例：<code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">create</span> <span class="pre">tank</span> <span class="pre">mirror</span> <span class="pre">A1</span> <span class="pre">B1</span> <span class="pre">mirror</span> <span class="pre">A2</span> <span class="pre">B2</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>/dev/disk/by-uuid/:</strong> 不是一个好选择</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>摘要：有人可能认为使用“UUID”将是一个理想的选择——然而，在实践中，这最终会列出每个 <strong>池</strong> ID 的一个设备，这对于导入具有多个磁盘的池并不是很有用。</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p><strong>/dev/disk/by-partuuid/</strong>/<strong>by-partlabel:</strong> 仅适用于现有分区</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>摘要：分区 UUID 是在创建时生成的，因此使用受到限制。</p></li>
+<li><p>缺点：你无法在未分区的磁盘上引用分区的唯一 ID 以进行 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">replace</span></code>/<code class="docutils literal notranslate"><span class="pre">add</span></code>/<code class="docutils literal notranslate"><span class="pre">attach</span></code>，并且如果没有提前写下映射，你将无法轻松找到故障磁盘。</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="etc-zfs-vdev-id-conf">
+<h2><a class="toc-backref" href="#id25" role="doc-backlink">设置 /etc/zfs/vdev_id.conf 文件</a><a class="headerlink" href="#etc-zfs-vdev-id-conf" title="Permalink to this heading"></a></h2>
+<p>为了使用 /dev/disk/by-vdev/ 命名，必须配置 <code class="docutils literal notranslate"><span class="pre">/etc/zfs/vdev_id.conf</span></code>。此文件的格式在 vdev_id.conf 手册页中有描述。以下是几个示例。</p>
+<p>具有直接连接的 SAS 机箱和任意插槽重新映射的非多路径配置。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multipath</span>     <span class="n">no</span>
+<span class="n">topology</span>      <span class="n">sas_direct</span>
+<span class="n">phys_per_port</span> <span class="mi">4</span>
+
+<span class="c1">#       PCI_SLOT HBA PORT  CHANNEL NAME</span>
+<span class="n">channel</span> <span class="mi">85</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">1</span>         <span class="n">A</span>
+<span class="n">channel</span> <span class="mi">85</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">0</span>         <span class="n">B</span>
+
+<span class="c1">#    Linux      Mapped</span>
+<span class="c1">#    Slot       Slot</span>
+<span class="n">slot</span> <span class="mi">0</span>          <span class="mi">2</span>
+<span class="n">slot</span> <span class="mi">1</span>          <span class="mi">6</span>
+<span class="n">slot</span> <span class="mi">2</span>          <span class="mi">0</span>
+<span class="n">slot</span> <span class="mi">3</span>          <span class="mi">3</span>
+<span class="n">slot</span> <span class="mi">4</span>          <span class="mi">5</span>
+<span class="n">slot</span> <span class="mi">5</span>          <span class="mi">7</span>
+<span class="n">slot</span> <span class="mi">6</span>          <span class="mi">4</span>
+<span class="n">slot</span> <span class="mi">7</span>          <span class="mi">1</span>
+</pre></div>
+</div>
+<p>SAS 交换机拓扑。请注意，在此示例中，channel 关键字仅接受两个参数。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">topology</span>      <span class="n">sas_switch</span>
+
+<span class="c1">#       SWITCH PORT  CHANNEL NAME</span>
+<span class="n">channel</span> <span class="mi">1</span>            <span class="n">A</span>
+<span class="n">channel</span> <span class="mi">2</span>            <span class="n">B</span>
+<span class="n">channel</span> <span class="mi">3</span>            <span class="n">C</span>
+<span class="n">channel</span> <span class="mi">4</span>            <span class="n">D</span>
+</pre></div>
+</div>
+<p>多路径配置。请注意，通道名称有多个定义——每个物理路径一个。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">multipath</span> <span class="n">yes</span>
+
+<span class="c1">#       PCI_SLOT HBA PORT  CHANNEL NAME</span>
+<span class="n">channel</span> <span class="mi">85</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">1</span>         <span class="n">A</span>
+<span class="n">channel</span> <span class="mi">85</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">0</span>         <span class="n">B</span>
+<span class="n">channel</span> <span class="mi">86</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">1</span>         <span class="n">A</span>
+<span class="n">channel</span> <span class="mi">86</span><span class="p">:</span><span class="mf">00.0</span>  <span class="mi">0</span>         <span class="n">B</span>
+</pre></div>
+</div>
+<p>使用设备链接别名的配置。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#     by-vdev</span>
+<span class="c1">#     name     fully qualified or base name of device link</span>
+<span class="n">alias</span> <span class="n">d1</span>       <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">disk</span><span class="o">/</span><span class="n">by</span><span class="o">-</span><span class="nb">id</span><span class="o">/</span><span class="n">wwn</span><span class="o">-</span><span class="mh">0x5000c5002de3b9ca</span>
+<span class="n">alias</span> <span class="n">d2</span>       <span class="n">wwn</span><span class="o">-</span><span class="mh">0x5000c5002def789e</span>
+</pre></div>
+</div>
+<p>定义新的磁盘名称后，运行 <code class="docutils literal notranslate"><span class="pre">udevadm</span> <span class="pre">trigger</span></code> 以提示 udev 解析配置文件。这将生成一个新的 /dev/disk/by-vdev 目录，其中包含指向 /dev/sdX 名称的符号链接。按照上面的第一个示例，你可以使用以下命令创建新的镜像池：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool create tank \
+    mirror A0 B0 mirror A1 B1 mirror A2 B2 mirror A3 B3 \
+    mirror A4 B4 mirror A5 B5 mirror A6 B6 mirror A7 B7
+
+$ zpool status
+  pool: tank
+ state: ONLINE
+ scan: none requested
+config:
+
+    NAME        STATE     READ WRITE CKSUM
+    tank        ONLINE       0     0     0
+      mirror-0  ONLINE       0     0     0
+        A0      ONLINE       0     0     0
+        B0      ONLINE       0     0     0
+      mirror-1  ONLINE       0     0     0
+        A1      ONLINE       0     0     0
+        B1      ONLINE       0     0     0
+      mirror-2  ONLINE       0     0     0
+        A2      ONLINE       0     0     0
+        B2      ONLINE       0     0     0
+      mirror-3  ONLINE       0     0     0
+        A3      ONLINE       0     0     0
+        B3      ONLINE       0     0     0
+      mirror-4  ONLINE       0     0     0
+        A4      ONLINE       0     0     0
+        B4      ONLINE       0     0     0
+      mirror-5  ONLINE       0     0     0
+        A5      ONLINE       0     0     0
+        B5      ONLINE       0     0     0
+      mirror-6  ONLINE       0     0     0
+        A6      ONLINE       0     0     0
+        B6      ONLINE       0     0     0
+      mirror-7  ONLINE       0     0     0
+        A7      ONLINE       0     0     0
+        B7      ONLINE       0     0     0
+
+errors: No known data errors
+</pre></div>
+</div>
+</section>
+<section id="dev">
+<h2><a class="toc-backref" href="#id26" role="doc-backlink">更改现有池的 /dev/ 名称</a><a class="headerlink" href="#dev" title="Permalink to this heading"></a></h2>
+<p>可以通过简单地导出池并使用 -d 选项重新导入池来更改现有池的 /dev/ 名称，以指定应使用的新名称。例如，要使用 /dev/disk/by-vdev 中的自定义名称：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool export tank
+$ zpool import -d /dev/disk/by-vdev tank
+</pre></div>
+</div>
+</section>
+<section id="etc-zfs-zpool-cache">
+<span id="the-etczfszpoolcache-file"></span><h2><a class="toc-backref" href="#id27" role="doc-backlink">/etc/zfs/zpool.cache 文件</a><a class="headerlink" href="#etc-zfs-zpool-cache" title="Permalink to this heading"></a></h2>
+<p>每当在系统上导入池时，它将被添加到 <code class="docutils literal notranslate"><span class="pre">/etc/zfs/zpool.cache</span></code> 文件中。此文件存储池配置信息，例如设备名称和池状态。如果在运行 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">import</span></code> 命令时存在此文件，则将使用它来确定可用于导入的池列表。当池未列在缓存文件中时，需要使用 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">import</span> <span class="pre">-d</span> <span class="pre">/dev/disk/by-id</span></code> 命令检测并导入池。</p>
+</section>
+<section id="generating-a-new-etczfszpoolcache-file">
+<span id="id6"></span><h2><a class="toc-backref" href="#id28" role="doc-backlink">生成新的 /etc/zfs/zpool.cache 文件</a><a class="headerlink" href="#generating-a-new-etczfszpoolcache-file" title="Permalink to this heading"></a></h2>
+<p>当你的池配置更改时，<code class="docutils literal notranslate"><span class="pre">/etc/zfs/zpool.cache</span></code> 文件将自动更新。然而，如果由于某种原因它变得过时，你可以通过在池上设置 cachefile 属性来强制生成新的 <code class="docutils literal notranslate"><span class="pre">/etc/zfs/zpool.cache</span></code> 文件。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool set cachefile=/etc/zfs/zpool.cache tank
+</pre></div>
+</div>
+<p>相反，可以通过设置 <code class="docutils literal notranslate"><span class="pre">cachefile=none</span></code> 来禁用缓存文件。这对于故障转移配置非常有用，其中池应始终由故障转移软件显式导入。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool set cachefile=none tank
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h2><a class="toc-backref" href="#id29" role="doc-backlink">发送和接收流</a><a class="headerlink" href="#id7" title="Permalink to this heading"></a></h2>
+<section id="hole-birth">
+<h3><a class="toc-backref" href="#id30" role="doc-backlink">hole_birth 错误</a><a class="headerlink" href="#hole-birth" title="Permalink to this heading"></a></h3>
+<p><cite>hole_birth</cite> 功能存在（或曾经存在）一些错误，导致的结果是，如果你从一个受影响的数据集执行 <cite>zfs send -i`（或 `-R</cite>，因为它使用了 <cite>-i</cite>），接收方不会看到任何校验和或其他错误，但生成的目标快照将与源快照不匹配。</p>
+<p>ZoL 版本 0.6.5.8 和 0.7.0-rc1（及以上版本）默认忽略导致此问题的错误元数据 <em>在发送方</em>。</p>
+<p>有关更多详细信息，请参阅 <a class="reference internal" href="FAQ%20hole%20birth.html"><span class="doc">hole_birth FAQ</span></a>。</p>
+</section>
+<section id="id8">
+<h3><a class="toc-backref" href="#id31" role="doc-backlink">发送大块数据</a><a class="headerlink" href="#id8" title="Permalink to this heading"></a></h3>
+<p>当发送包含大块数据（&gt;128K）的增量流时，必须指定 <code class="docutils literal notranslate"><span class="pre">--large-block</span></code> 标志。在增量发送之间不一致地使用此标志可能导致文件在接收时被错误地清零。原始加密的发送/接收自动隐含 <code class="docutils literal notranslate"><span class="pre">--large-block</span></code> 标志，因此不受影响。</p>
+<p>有关更多详细信息，请参阅 <a class="reference external" href="https://github.com/zfsonlinux/zfs/issues/6224">问题 6224</a>。</p>
+</section>
+</section>
+<section id="ceph-zfs">
+<h2><a class="toc-backref" href="#id32" role="doc-backlink">CEPH/ZFS</a><a class="headerlink" href="#ceph-zfs" title="Permalink to this heading"></a></h2>
+<p>根据 CEPH/ZFS 上的工作负载，可以进行大量调整，以及一些一般性指南。以下是一些建议：</p>
+<section id="id9">
+<h3><a class="toc-backref" href="#id33" role="doc-backlink">ZFS 配置</a><a class="headerlink" href="#id9" title="Permalink to this heading"></a></h3>
+<p>CEPH 文件存储后端严重依赖 xattrs，为了获得最佳性能，所有 CEPH 工作负载都将受益于以下 ZFS 数据集参数：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">xattr=sa</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dnodesize=auto</span></code></p></li>
+</ul>
+<p>除此之外，通常 rbd/cephfs 工作负载受益于较小的 recordsize（16K-128K），而 objectstore/s3/rados 工作负载受益于较大的 recordsize（128K-1M）。</p>
+</section>
+<section id="ceph-ceph-conf">
+<span id="ceph-configuration-cephconf"></span><h3><a class="toc-backref" href="#id34" role="doc-backlink">CEPH 配置 (ceph.conf)</a><a class="headerlink" href="#ceph-ceph-conf" title="Permalink to this heading"></a></h3>
+<p>此外，CEPH 根据底层文件系统设置了各种处理 xattrs 的值。由于 CEPH 仅正式支持/检测 XFS 和 BTRFS，对于所有其他文件系统，它会回退到相当 <a class="reference external" href="https://github.com/ceph/ceph/blob/4fe7e2a458a1521839bc390c2e3233dd809ec3ac/src/common/config_opts.h#L1125-L1148">有限的“安全”值</a>。在新版本中，对较大 xattrs 的需求将阻止 OSD 启动。</p>
+<p>官方推荐的解决方法（<a class="reference external" href="https://tracker.ceph.com/issues/16187#note-3">参见此处</a>）有一些严重的缺点，特别是针对具有“有限”xattr 支持的文件系统（如 ext4）。</p>
+<p>ZFS 内部没有 xattrs 长度的限制，因此我们可以像 CEPH 处理 XFS 一样处理它。我们可以设置覆盖以将三个内部值设置为与 XFS 使用的值相同（<a class="reference external" href="https://github.com/ceph/ceph/blob/9b317f7322848802b3aab9fec3def81dddd4a49b/src/os/filestore/FileStore.cc#L5714-L5737">参见此处</a> 和 <a class="reference external" href="https://github.com/ceph/ceph/blob/4fe7e2a458a1521839bc390c2e3233dd809ec3ac/src/common/config_opts.h#L1125-L1148">此处</a>），并允许它在没有“官方”解决方法的严重限制的情况下使用。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">osd</span><span class="p">]</span>
+<span class="n">filestore_max_inline_xattrs</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">filestore_max_inline_xattr_size</span> <span class="o">=</span> <span class="mi">65536</span>
+<span class="n">filestore_max_xattr_value_size</span> <span class="o">=</span> <span class="mi">65536</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3><a class="toc-backref" href="#id35" role="doc-backlink">其他一般性指南</a><a class="headerlink" href="#id10" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>使用单独的日志设备。如果可能，不要将 CEPH 日志与 ZFS 数据集放在一起，这将很快导致严重的碎片化，甚至在碎片化之前就会导致性能极差（CEPH 日志对每次写入都进行 dsync）。</p></li>
+<li><p>使用 SLOG 设备，即使有单独的 CEPH 日志设备。对于某些工作负载，跳过 SLOG 并设置 <code class="docutils literal notranslate"><span class="pre">logbias=throughput</span></code> 可能是可以接受的。</p></li>
+<li><p>使用高质量的 SLOG/CEPH 日志设备。消费级 SSD 甚至 NVMe 都不适合（如三星 830、840、850 等），原因有很多。CEPH 会很快杀死它们，而且在这种使用中性能相当低。通常推荐的设备是 [Intel DC S3610、S3700、S3710、P3600、P3700] 或 [Samsung SM853、SM863] 或更好的设备。</p></li>
+<li><p>如果使用高质量的 SSD 或 NVMe 设备（如上所述），你可以在单个设备上共享 SLOG 和 CEPH 日志以获得良好的效果。4 个 HDD 与 1 个 SSD（Intel DC S3710 200GB）的比例，每个 SSD 分区（记得对齐！）为 4x10GB（用于 ZIL/SLOG）+ 4x20GB（用于 CEPH 日志）已被报告为效果良好。</p></li>
+</ul>
+<p>再次强调——CEPH + ZFS 会很快杀死消费级 SSD。即使忽略缺乏电源丢失保护和耐久性评级，你也会对消费级 SSD 在这种工作负载下的性能感到非常失望。</p>
+</section>
+</section>
+<section id="id11">
+<h2><a class="toc-backref" href="#id36" role="doc-backlink">性能考虑</a><a class="headerlink" href="#id11" title="Permalink to this heading"></a></h2>
+<p>要实现良好的池性能，应遵循一些简单的最佳实践。</p>
+<ul class="simple">
+<li><p><strong>将磁盘均匀分布在控制器上：</strong> 通常性能的瓶颈不是磁盘，而是控制器。通过将磁盘均匀分布在控制器上，通常可以提高吞吐量。</p></li>
+<li><p><strong>使用整个磁盘创建池：</strong> 在运行 zpool create 时使用整个磁盘名称。这将允许 ZFS 自动分区磁盘以确保正确对齐。它还将提高与其他 OpenZFS 实现的互操作性，这些实现遵循 wholedisk 属性。</p></li>
+<li><p><strong>有足够的内存：</strong> 建议 ZFS 至少使用 2GB 内存。当启用压缩和去重功能时，强烈建议增加内存。</p></li>
+<li><p><strong>通过设置 ashift=12 提高性能：</strong> 你可以通过设置 <code class="docutils literal notranslate"><span class="pre">ashift=12</span></code> 来提高某些工作负载的性能。此调整只能在块设备首次添加到池时设置，例如在首次创建池或向池添加新 vdev 时。此调整参数可能会导致 RAIDZ 配置的容量减少。</p></li>
+</ul>
+</section>
+<section id="id12">
+<h2><a class="toc-backref" href="#id37" role="doc-backlink">高级格式磁盘</a><a class="headerlink" href="#id12" title="Permalink to this heading"></a></h2>
+<p>高级格式（AF）是一种新的磁盘格式，它原生使用 4,096 字节而不是 512 字节的扇区大小。为了与旧系统保持兼容，许多 AF 磁盘模拟 512 字节的扇区大小。默认情况下，ZFS 会自动检测驱动器的扇区大小。这种组合可能导致磁盘访问未对齐，从而大大降低池性能。</p>
+<p>因此，zpool 命令中添加了设置 ashift 属性的功能。这允许用户在设备首次添加到池时（通常在池创建时或向池添加 vdev 时）显式分配扇区大小。ashift 值的范围从 9 到 16，默认值 0 表示 zfs 应自动检测扇区大小。此值实际上是位移值，因此 512 字节的 ashift 值为 9（2^9 = 512），而 4,096 字节的 ashift 值为 12（2^12 = 4,096）。</p>
+<p>要在池创建时强制池使用 4,096 字节扇区，你可以运行：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool create -o ashift=12 tank mirror sda sdb
+</pre></div>
+</div>
+<p>要在向池添加 vdev 时强制池使用 4,096 字节扇区，你可以运行：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zpool add -o ashift=12 tank mirror sdc sdd
+</pre></div>
+</div>
+</section>
+<section id="zvol">
+<h2><a class="toc-backref" href="#id38" role="doc-backlink">ZVOL 使用空间大于预期</a><a class="headerlink" href="#zvol" title="Permalink to this heading"></a></h2>
+<div class="line-block">
+<div class="line">根据 zvol 上使用的文件系统（例如 ext4）和使用情况（例如删除和创建许多文件），zvol 报告的 <code class="docutils literal notranslate"><span class="pre">used</span></code> 和 <code class="docutils literal notranslate"><span class="pre">referenced</span></code> 属性可能大于消费者报告的“实际”使用空间。</div>
+<div class="line">这可能是因为某些文件系统的工作方式，它们更喜欢在未使用的新块中分配文件，而不是标记为空闲的碎片化块。这迫使 zfs 引用底层文件系统曾经接触过的所有块。</div>
+<div class="line">这本身并不是一个大问题，因为当 <code class="docutils literal notranslate"><span class="pre">used</span></code> 属性达到配置的 <code class="docutils literal notranslate"><span class="pre">volsize</span></code> 时，底层文件系统将开始重用块。但如果需要对 zvol 进行快照，问题就会出现，因为快照引用的空间将包含未使用的块。</div>
+</div>
+<div class="line-block">
+<div class="line">可以通过发出所谓的 trim（例如 Linux 上的 <code class="docutils literal notranslate"><span class="pre">fstrim</span></code> 命令）来防止此问题，以允许内核指定 zfs 哪些块未使用。</div>
+<div class="line">在快照之前发出 trim 将确保最小的快照大小。</div>
+<div class="line">对于 Linux，在 <code class="docutils literal notranslate"><span class="pre">/etc/fstab</span></code> 中为挂载的 ZVOL 添加 <code class="docutils literal notranslate"><span class="pre">discard</span></code> 选项可以有效地使内核持续发出 trim 命令，而无需按需执行 fstrim。</div>
+</div>
+</section>
+<section id="linux-zvol">
+<h2><a class="toc-backref" href="#id39" role="doc-backlink">在 Linux 上使用 zvol 作为交换设备</a><a class="headerlink" href="#linux-zvol" title="Permalink to this heading"></a></h2>
+<p>你可以使用 zvol 作为交换设备，但需要适当配置。</p>
+<p><strong>警告：</strong> 目前 zvol 上的交换可能导致死锁，如果发生这种情况，请将日志发送到 <a class="reference external" href="https://github.com/zfsonlinux/zfs/issues/7734">此处</a>。</p>
+<ul class="simple">
+<li><p>将卷块大小设置为与系统的页面大小匹配。此调整可防止 ZFS 在系统内存不足时对较大的块执行读-修改-写操作。</p></li>
+<li><p>设置 <code class="docutils literal notranslate"><span class="pre">logbias=throughput</span></code> 和 <code class="docutils literal notranslate"><span class="pre">sync=always</span></code> 属性。写入卷的数据将立即刷新到磁盘，以尽快释放内存。</p></li>
+<li><p>设置 <code class="docutils literal notranslate"><span class="pre">primarycache=metadata</span></code> 以避免通过 ARC 将交换数据保留在 RAM 中。</p></li>
+<li><p>禁用交换设备的自动快照。</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ zfs create -V 4G -b $(getconf PAGESIZE) \
+    -o logbias=throughput -o sync=always \
+    -o primarycache=metadata \
+    -o com.sun:auto-snapshot=false rpool/swap
+</pre></div>
+</div>
+</section>
+<section id="xen-hypervisor-xen-dom0-zfs-linux">
+<h2><a class="toc-backref" href="#id40" role="doc-backlink">在 Xen Hypervisor 或 Xen Dom0 上使用 ZFS（Linux）</a><a class="headerlink" href="#xen-hypervisor-xen-dom0-zfs-linux" title="Permalink to this heading"></a></h2>
+<p>通常建议将虚拟机存储和 Hypervisor 池分开。尽管有些人已成功部署并运行 OpenZFS，使用同一台机器配置为 Dom0。有几个注意事项：</p>
+<ul class="simple">
+<li><p>在 grub.conf 中为 Dom0 设置合理的内存量。</p>
+<ul>
+<li><p>dom0_mem=16384M,max:16384M</p></li>
+</ul>
+</li>
+<li><p>在 <code class="docutils literal notranslate"><span class="pre">/etc/modprobe.d/zfs.conf</span></code> 中为 Dom0 的内存分配不超过 30-40% 给 ZFS。</p>
+<ul>
+<li><p>options zfs zfs_arc_max=6442450944</p></li>
+</ul>
+</li>
+<li><p>在 <code class="docutils literal notranslate"><span class="pre">/etc/xen/xl.conf</span></code> 中禁用 Xen 的自动气球功能。</p></li>
+<li><p>注意任何 Xen 错误，例如与气球相关的 <a class="reference external" href="https://github.com/zfsonlinux/zfs/issues/1067">此错误</a>。</p></li>
+</ul>
+</section>
+<section id="udisks2-zvol-dev-mapper-linux">
+<h2><a class="toc-backref" href="#id41" role="doc-backlink">udisks2 为 zvol 创建 /dev/mapper/ 条目（Linux）</a><a class="headerlink" href="#udisks2-zvol-dev-mapper-linux" title="Permalink to this heading"></a></h2>
+<p>为防止 udisks2 创建必须手动删除或维护的 /dev/mapper 条目，请在 zvol 删除/重命名期间创建 udev 规则，例如 <code class="docutils literal notranslate"><span class="pre">/etc/udev/rules.d/80-udisks2-ignore-zfs.rules</span></code>，内容如下：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ENV</span><span class="p">{</span><span class="n">ID_PART_ENTRY_SCHEME</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;gpt&quot;</span><span class="p">,</span> <span class="n">ENV</span><span class="p">{</span><span class="n">ID_FS_TYPE</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;zfs_member&quot;</span><span class="p">,</span> <span class="n">ENV</span><span class="p">{</span><span class="n">ID_PART_ENTRY_TYPE</span><span class="p">}</span><span class="o">==</span><span class="s2">&quot;6a898cc3-1dd2-11b2-99a6-080020736631&quot;</span><span class="p">,</span> <span class="n">ENV</span><span class="p">{</span><span class="n">UDISKS_IGNORE</span><span class="p">}</span><span class="o">=</span><span class="s2">&quot;1&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id13">
+<h2><a class="toc-backref" href="#id42" role="doc-backlink">许可</a><a class="headerlink" href="#id13" title="Permalink to this heading"></a></h2>
+<p>许可信息可以在 <a class="reference external" href="https://openzfs.github.io/openzfs-docs/License.html">此处</a> 找到。</p>
+</section>
+<section id="id14">
+<h2><a class="toc-backref" href="#id43" role="doc-backlink">报告问题</a><a class="headerlink" href="#id14" title="Permalink to this heading"></a></h2>
+<p>你可以使用公共 <a class="reference external" href="https://github.com/zfsonlinux/zfs/issues">问题跟踪器</a> 打开新问题并搜索现有问题。问题跟踪器用于组织未解决的错误报告、功能请求和其他开发任务。任何人在注册 github 帐户后都可以发表评论。</p>
+<p>请确保你实际看到的是错误而不是支持问题。如果有疑问，请先在邮件列表中询问，如果要求你提交问题，请照做。</p>
+<p>打开新问题时，请在问题顶部包含以下信息：</p>
+<ul class="simple">
+<li><p>你使用的发行版及其版本。</p></li>
+<li><p>你使用的 spl/zfs 包及其版本。</p></li>
+<li><p>描述你观察到的问题。</p></li>
+<li><p>描述如何重现问题。</p></li>
+<li><p>包括系统日志中的任何警告/错误/回溯。</p></li>
+</ul>
+<p>当打开新问题时，开发人员通常会要求提供有关问题的更多信息。一般来说，你分享的细节越多，开发人员解决问题的速度就越快。例如，提供一个简单的测试用例总是非常有帮助的。准备好与开发人员合作，以便解决问题。他们可能会要求提供以下信息：</p>
+<ul class="simple">
+<li><p>你的池配置，如 <code class="docutils literal notranslate"><span class="pre">zdb</span></code> 或 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">status</span></code> 报告的那样。</p></li>
+<li><p>你的硬件配置，例如</p>
+<ul>
+<li><p>CPU 数量。</p></li>
+<li><p>内存量。</p></li>
+<li><p>你的系统是否具有 ECC 内存。</p></li>
+<li><p>是否在 VMM/Hypervisor 下运行。</p></li>
+<li><p>内核版本。</p></li>
+<li><p>spl/zfs 模块参数的值。</p></li>
+</ul>
+</li>
+<li><p>可能记录到 <code class="docutils literal notranslate"><span class="pre">dmesg</span></code> 的堆栈跟踪。</p></li>
+</ul>
+</section>
+<section id="id15">
+<h2><a class="toc-backref" href="#id44" role="doc-backlink">OpenZFS 有行为准则吗？</a><a class="headerlink" href="#id15" title="Permalink to this heading"></a></h2>
+<p>是的，OpenZFS 社区有行为准则。有关详细信息，请参阅 <a class="reference external" href="https://openzfs.org/wiki/Code_of_Conduct">行为准则</a>。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Admin%20Documentation.html" class="btn btn-neutral float-left" title="管理员文档" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Mailing%20Lists.html" class="btn btn-neutral float-right" title="邮件列表" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

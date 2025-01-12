@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>构建 ZFS &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">构建 ZFS</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Developer Resources/Building ZFS.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zfs">
+<h1>构建 ZFS<a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h1>
+<section id="github">
+<h2>GitHub 仓库<a class="headerlink" href="#github" title="Permalink to this heading"></a></h2>
+<p>OpenZFS 的官方源码由 GitHub 上的 <a class="reference external" href="https://github.com/openzfs/">openzfs</a> 组织维护。该项目的主要 git 仓库是 <a class="reference external" href="https://github.com/openzfs/zfs">zfs</a> 仓库。</p>
+<p>该仓库包含两个主要组件：</p>
+<ul class="simple">
+<li><p><strong>ZFS</strong>: ZFS 仓库包含上游 OpenZFS 代码的副本，这些代码已经为 Linux 和 FreeBSD 进行了适配和扩展。绝大部分核心 OpenZFS 代码是自包含的，可以在不修改的情况下使用。</p></li>
+<li><p><strong>SPL</strong>: SPL 是一个薄薄的垫片层，负责实现 OpenZFS 所需的基本接口。正是这一层使得 OpenZFS 能够在多个平台上使用。SPL 曾经在一个单独的仓库中维护，但在 <code class="docutils literal notranslate"><span class="pre">0.8</span></code> 大版本发布时被合并到了 <a class="reference external" href="https://github.com/openzfs/zfs">zfs</a> 仓库中。</p></li>
+</ul>
+</section>
+<section id="id1">
+<h2>安装依赖<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>首先，您需要准备环境，安装完整的开发工具链。此外，内核和以下包的开发头文件也必须可用。需要注意的是，如果当前运行内核的开发头文件没有安装，模块将无法正确编译。</p>
+<p>以下依赖项应安装以构建最新的 ZFS 2.1 版本。</p>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 7</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>epel-release<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>libudev-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>elfutils-libelf-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>python<span class="w"> </span>python2-devel<span class="w"> </span>python-setuptools<span class="w"> </span>python-cffi<span class="w"> </span>libffi-devel<span class="w"> </span>git<span class="w"> </span>ncompress<span class="w"> </span>libcurl-devel
+sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>python-packaging<span class="w"> </span>dkms
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 8, Fedora</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>epel-release<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>libudev-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>elfutils-libelf-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>python3<span class="w"> </span>python3-devel<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-cffi<span class="w"> </span>libffi-devel<span class="w"> </span>git<span class="w"> </span>ncompress<span class="w"> </span>libcurl-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>--enablerepo<span class="o">=</span>powertools<span class="w"> </span>python3-packaging<span class="w"> </span>dkms
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Debian, Ubuntu</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>alien<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>build-essential<span class="w"> </span>debhelper-compat<span class="w"> </span>dh-autoreconf<span class="w"> </span>dh-dkms<span class="w"> </span>dh-python<span class="w"> </span>dkms<span class="w"> </span>fakeroot<span class="w"> </span>gawk<span class="w"> </span>git<span class="w"> </span>libaio-dev<span class="w"> </span>libattr1-dev<span class="w"> </span>libblkid-dev<span class="w"> </span>libcurl4-openssl-dev<span class="w"> </span>libelf-dev<span class="w"> </span>libffi-dev<span class="w"> </span>libpam0g-dev<span class="w"> </span>libssl-dev<span class="w"> </span>libtirpc-dev<span class="w"> </span>libtool<span class="w"> </span>libudev-dev<span class="w"> </span>linux-headers-generic<span class="w"> </span>parallel<span class="w"> </span>po-debconf<span class="w"> </span>python3<span class="w"> </span>python3-all-dev<span class="w"> </span>python3-cffi<span class="w"> </span>python3-dev<span class="w"> </span>python3-packaging<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-sphinx<span class="w"> </span>uuid-dev<span class="w"> </span>zlib1g-dev
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>FreeBSD</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pkg<span class="w"> </span>install<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>autotools<span class="w"> </span>git<span class="w"> </span>gmake<span class="w"> </span>python<span class="w"> </span>devel/py-sysctl<span class="w"> </span>sudo
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>构建选项<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>构建 OpenZFS 有两种选择；正确的选择主要取决于您的需求。</p>
+<ul class="simple">
+<li><p><strong>包</strong>: 通常从 git 构建自定义包并安装到系统上会很有用。这是与 systemd、dracut 和 udev 进行集成测试的最佳方式。使用包的缺点是大大增加了构建、安装和测试更改所需的时间。</p></li>
+<li><p><strong>树内</strong>: 开发可以完全在 SPL/ZFS 源码树中进行。这通过允许开发人员快速迭代补丁来加速开发。在树内工作时，开发人员可以利用增量构建、加载/卸载内核模块、执行实用程序，并使用 ZFS 测试套件验证所有更改。</p></li>
+</ul>
+<p>本页的其余部分将重点介绍 <strong>树内</strong> 选项，这是大多数更改推荐的开发方法。有关构建自定义包的更多信息，请参阅 <a class="reference internal" href="Custom%20Packages.html"><span class="doc">自定义包</span></a> 页面。</p>
+</section>
+<section id="id3">
+<h2>树内开发<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<section id="id4">
+<h3>从 GitHub 克隆<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
+<p>首先从 GitHub 克隆 ZFS 仓库。该仓库有一个用于开发的 <strong>master</strong> 分支和一系列用于标记发布的 <strong>*-release</strong> 分支。检出仓库后，您的克隆将默认使用 master 分支。可以通过检出具有匹配版本号的 zfs-x.y.z 标签或匹配的发布分支来构建标记的发布。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">openzfs</span><span class="o">/</span><span class="n">zfs</span>
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>配置和构建<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
+<p>对于开发人员来说，在进行更改时，始终基于 master 创建一个新的主题分支。这将使以后更容易使用您的更改打开拉取请求。通过广泛的 <a class="reference external" href="http://build.zfsonlinux.org/">回归测试</a>，master 分支在每次拉取请求合并前后都保持稳定。我们尽一切努力尽早发现缺陷并将其排除在树外。开发人员应习惯于频繁地将其工作与最新的 master 分支进行变基。</p>
+<p>在此示例中，我们将使用 master 分支并逐步完成标准的 <strong>树内</strong> 构建。首先检出所需的分支，然后以传统的 autotools 方式构建 ZFS 和 SPL 源码。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>cd ./zfs
+git checkout master
+sh autogen.sh
+./configure
+make -s -j$(nproc)
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>提示:</strong> <code class="docutils literal notranslate"><span class="pre">--with-linux=PATH</span></code> 和 <code class="docutils literal notranslate"><span class="pre">--with-linux-obj=PATH</span></code> 可以传递给 configure 以指定安装在内核非默认位置的路径。</div>
+<div class="line"><strong>提示:</strong> <code class="docutils literal notranslate"><span class="pre">--enable-debug</span></code> 可以传递给 configure 以启用所有 ASSERT 和额外的正确性测试。</div>
+</div>
+<p><strong>可选</strong> 构建包</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span> <span class="n">rpm</span> <span class="c1">#构建 CentOS/Fedora 的 RPM 包</span>
+<span class="n">make</span> <span class="n">deb</span> <span class="c1">#构建 Debian/Ubuntu 的 RPM 转换 DEB 包</span>
+<span class="n">make</span> <span class="n">native</span><span class="o">-</span><span class="n">deb</span> <span class="c1">#构建 Debian/Ubuntu 的原生 DEB 包</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line"><strong>提示:</strong> 原生 Debian 包使用为 Debian 和 Ubuntu 预配置的路径构建。最好不要在配置期间覆盖路径。</div>
+<div class="line"><strong>提示:</strong> 对于原生 Debian 包，可以导出 <code class="docutils literal notranslate"><span class="pre">KVERS</span></code>、<code class="docutils literal notranslate"><span class="pre">KSRC</span></code> 和 <code class="docutils literal notranslate"><span class="pre">KOBJ</span></code> 环境变量以指定安装在内核非默认位置的路径。</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>从 openzfs-2.2 版本开始，将支持原生 Debian 打包。</p>
+</div>
+</section>
+<section id="id6">
+<h3>安装<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h3>
+<p>您可以在不安装 ZFS 的情况下运行 <code class="docutils literal notranslate"><span class="pre">zfs-tests.sh</span></code>，请参见下文。如果您有理由在构建后安装 ZFS，请注意您的发行版如何处理内核模块。例如，在 Ubuntu 上，此仓库中的模块安装在 <code class="docutils literal notranslate"><span class="pre">extra</span></code> 内核模块路径中，该路径不在标准的 <code class="docutils literal notranslate"><span class="pre">depmod</span></code> 搜索路径中。因此，在测试期间，编辑 <code class="docutils literal notranslate"><span class="pre">/etc/depmod.d/ubuntu.conf</span></code> 并将 <code class="docutils literal notranslate"><span class="pre">extra</span></code> 添加到搜索路径的开头。</p>
+<p>然后您可以使用 <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">make</span> <span class="pre">install;</span> <span class="pre">sudo</span> <span class="pre">ldconfig;</span> <span class="pre">sudo</span> <span class="pre">depmod</span></code> 进行安装。您可以使用 <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">make</span> <span class="pre">uninstall;</span> <span class="pre">sudo</span> <span class="pre">ldconfig;</span> <span class="pre">sudo</span> <span class="pre">depmod</span></code> 进行卸载。您可以使用 <code class="docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">make</span> <span class="pre">-C</span> <span class="pre">modules/</span> <span class="pre">install</span></code> 仅安装内核模块。</p>
+</section>
+<section id="zloop-sh-zfs-tests-sh">
+<span id="running-zloopsh-and-zfs-testssh"></span><h3>运行 zloop.sh 和 zfs-tests.sh<a class="headerlink" href="#zloop-sh-zfs-tests-sh" title="Permalink to this heading"></a></h3>
+<p>如果您希望运行 ZFS 测试套件 (ZTS)，则必须安装 <code class="docutils literal notranslate"><span class="pre">ksh</span></code> 和一些额外的实用程序。</p>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 7:</strong></p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>ksh<span class="w"> </span>bc<span class="w"> </span>bzip2<span class="w"> </span>fio<span class="w"> </span>acl<span class="w"> </span>sysstat<span class="w"> </span>mdadm<span class="w"> </span>lsscsi<span class="w"> </span>parted<span class="w"> </span>attr<span class="w"> </span>nfs-utils<span class="w"> </span>samba<span class="w"> </span>rng-tools<span class="w"> </span>pax<span class="w"> </span>perf
+sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>dbench
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 8, Fedora:</strong></p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>ksh<span class="w"> </span>bc<span class="w"> </span>bzip2<span class="w"> </span>fio<span class="w"> </span>acl<span class="w"> </span>sysstat<span class="w"> </span>mdadm<span class="w"> </span>lsscsi<span class="w"> </span>parted<span class="w"> </span>attr<span class="w"> </span>nfs-utils<span class="w"> </span>samba<span class="w"> </span>rng-tools<span class="w"> </span>pax<span class="w"> </span>perf
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>dbench
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Debian:</strong></p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>ksh<span class="w"> </span>bc<span class="w"> </span>bzip2<span class="w"> </span>fio<span class="w"> </span>acl<span class="w"> </span>sysstat<span class="w"> </span>mdadm<span class="w"> </span>lsscsi<span class="w"> </span>parted<span class="w"> </span>attr<span class="w"> </span>dbench<span class="w"> </span>nfs-kernel-server<span class="w"> </span>samba<span class="w"> </span>rng-tools<span class="w"> </span>pax<span class="w"> </span>linux-perf<span class="w"> </span>selinux-utils<span class="w"> </span>quota
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Ubuntu:</strong></p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>ksh<span class="w"> </span>bc<span class="w"> </span>bzip2<span class="w"> </span>fio<span class="w"> </span>acl<span class="w"> </span>sysstat<span class="w"> </span>mdadm<span class="w"> </span>lsscsi<span class="w"> </span>parted<span class="w"> </span>attr<span class="w"> </span>dbench<span class="w"> </span>nfs-kernel-server<span class="w"> </span>samba<span class="w"> </span>rng-tools<span class="w"> </span>pax<span class="w"> </span>linux-tools-common<span class="w"> </span>selinux-utils<span class="w"> </span>quota
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>FreeBSD</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pkg<span class="w"> </span>install<span class="w"> </span>base64<span class="w"> </span>bash<span class="w"> </span>checkbashisms<span class="w"> </span>fio<span class="w"> </span>hs-ShellCheck<span class="w"> </span>ksh93<span class="w"> </span>pamtester<span class="w"> </span>devel/py-flake8<span class="w"> </span>sudo
+</pre></div>
+</div>
+<p>在顶级脚本目录中提供了一些辅助脚本，旨在帮助开发人员使用树内构建。</p>
+<ul class="simple">
+<li><p><strong>zfs-helper.sh:</strong> 某些功能（即 /dev/zvol/）依赖于系统上安装的 ZFS 提供的 udev 辅助脚本。此脚本可用于在系统上创建从安装位置到树内辅助脚本的符号链接。这些链接必须到位才能成功运行 ZFS 测试套件。<strong>-i</strong> 和 <strong>-r</strong> 选项可用于安装和删除符号链接。</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">zfs</span><span class="o">-</span><span class="n">helpers</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">i</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>zfs.sh:</strong> 可以使用 <code class="docutils literal notranslate"><span class="pre">zfs.sh</span></code> 加载新构建的内核模块。稍后可以使用 <strong>-u</strong> 选项卸载内核模块。</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">zfs</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>zloop.sh:</strong> 一个包装器，用于使用随机参数重复运行 ztest。ztest 命令是一个用户空间压力测试，旨在通过并发运行一组随机测试用例来检测正确性问题。如果遇到崩溃，ztest 日志、任何相关的 vdev 文件和核心文件（如果存在）将被收集并移动到输出目录以供分析。</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">zloop</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>zfs-tests.sh:</strong> 一个包装器，可用于启动 ZFS 测试套件。在 <code class="docutils literal notranslate"><span class="pre">/var/tmp/</span></code> 中位于稀疏文件顶部的三个回环设备被创建并用于回归测试。ZFS 测试套件的详细说明可以在顶级测试目录中的 <a class="reference external" href="https://github.com/openzfs/zfs/tree/master/tests">README</a> 中找到。</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">scripts</span><span class="o">/</span><span class="n">zfs</span><span class="o">-</span><span class="n">tests</span><span class="o">.</span><span class="n">sh</span> <span class="o">-</span><span class="n">vx</span>
+</pre></div>
+</div>
+<p><strong>提示:</strong> 除非在 zfs 目录及其父目录上设置了组读取权限，否则将跳过 <strong>delegate</strong> 测试。</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

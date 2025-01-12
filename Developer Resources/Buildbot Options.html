@@ -1,0 +1,280 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Buildbot 选项 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Buildbot 选项</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Developer Resources/Buildbot Options.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="buildbot">
+<h1>Buildbot 选项<a class="headerlink" href="#buildbot" title="Permalink to this heading"></a></h1>
+<p>在提交级别上，有多种方式可以控制 ZFS Buildbot。本页提供了 ZFS Buildbot 支持的各种选项的摘要及其对测试的影响。有关其实现的更多详细信息，请访问 <a class="reference external" href="https://github.com/zfsonlinux/zfs-buildbot">ZFS Buildbot Github 页面</a>。</p>
+<section id="id1">
+<h2>选择构建器<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>默认情况下，ZFS 拉取请求中的所有提交都会由 BUILD 构建器进行编译。此外，ZFS 拉取请求的顶部提交会由 TEST 构建器进行测试。然而，您可以选择在每个提交的基础上覆盖应使用的构建器类型。在这种情况下，您可以在提交消息中添加
+<code class="docutils literal notranslate"><span class="pre">Requires-builders:</span> <span class="pre">&lt;none|all|style|build|arch|distro|test|perf|coverage|unstable&gt;</span></code>。可以提供逗号分隔的选项列表。支持的选项有：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">all</span></code>：此提交应由所有可用的构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">none</span></code>：此提交不应由任何构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">style</span></code>：此提交应由 STYLE 构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">build</span></code>：此提交应由所有 BUILD 构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arch</span></code>：此提交应由标记为“架构”的 BUILD 构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">distro</span></code>：此提交应由标记为“发行版”的 BUILD 构建器构建</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test</span></code>：此提交应由 TEST 构建器构建和测试（不包括 Coverage TEST 构建器）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">perf</span></code>：此提交应由 PERF 构建器构建和测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coverage</span></code>：此提交应由 Coverage TEST 构建器构建和测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unstable</span></code>：此提交应由 Unstable TEST 构建器构建和测试（目前仅限 Fedora Rawhide TEST 构建器）</p></li>
+</ul>
+<p>以下是一些如何在提交消息中使用 <code class="docutils literal notranslate"><span class="pre">Requires-builders:</span></code> 的示例。</p>
+<section id="id2">
+<span id="id3"></span><h3>防止提交被构建和测试<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Requires-builders: none
+</pre></div>
+</div>
+</section>
+<section id="style-test">
+<span id="id4"></span><h3>将提交仅提交给 STYLE 和 TEST 构建器<a class="headerlink" href="#style-test" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Requires-builders: style test
+</pre></div>
+</div>
+</section>
+</section>
+<section id="spl">
+<h2>要求 SPL 版本<a class="headerlink" href="#spl" title="Permalink to this heading"></a></h2>
+<p>目前，ZFS Buildbot 尝试根据拉取请求的基础分支选择正确的 SPL 分支进行构建。在需要构建特定 SPL 版本的情况下，ZFS Buildbot 支持为拉取请求测试指定 SPL 版本。通过打开针对 ZFS 的拉取请求并在提交消息中添加 <code class="docutils literal notranslate"><span class="pre">Requires-spl:</span></code>，您可以指示 Buildbot 使用特定的 SPL 版本。以下是指定 SPL 版本的提交消息示例。</p>
+<section id="id5">
+<h3>从特定拉取请求构建 SPL<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Requires-spl: refs/pull/123/head
+</pre></div>
+</div>
+</section>
+<section id="zfsonlinux-spl-spl-spl-branch-name">
+<h3>从 <code class="docutils literal notranslate"><span class="pre">zfsonlinux/spl</span></code> 仓库构建 SPL 分支 <code class="docutils literal notranslate"><span class="pre">spl-branch-name</span></code><a class="headerlink" href="#zfsonlinux-spl-spl-spl-branch-name" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Requires-spl: spl-branch-name
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id6">
+<h2>要求内核版本<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
+<p>目前，Kernel.org 构建器将克隆并构建 Linux 的主分支。在需要构建特定版本的 Linux 内核的情况下，ZFS Buildbot 支持通过提交消息指定要构建的 Linux 内核。通过打开针对 ZFS 的拉取请求并在提交消息中添加 <code class="docutils literal notranslate"><span class="pre">Requires-kernel:</span></code>，您可以指示 Buildbot 使用特定的 Linux 内核。以下是指定特定 Linux 内核标签的提交消息示例。</p>
+<section id="linux-4-14">
+<span id="id7"></span><h3>构建 Linux 内核版本 4.14<a class="headerlink" href="#linux-4-14" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Requires-kernel: v4.14
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>构建步骤覆盖<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h2>
+<p>每个构建器将根据其默认偏好执行或跳过构建步骤。在某些情况下，可能会跳过各种构建步骤。ZFS Buildbot 支持在提交消息中覆盖所有构建器的默认设置。可用的覆盖选项包括：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Build-linux:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有构建器应为此提交构建 Linux</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Build-lustre:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有构建器应为此提交构建 Lustre</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Build-spl:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有构建器应为此提交构建 SPL</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Build-zfs:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有构建器应为此提交构建 ZFS</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Built-in:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有 Linux 构建应内置 SPL 和 ZFS</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Check-lint:</span> <span class="pre">&lt;Yes|No&gt;</span></code>：所有构建器应为此提交执行 lint 检查</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Configure-lustre:</span> <span class="pre">&lt;options&gt;</span></code>：构建 Lustre 时提供 <code class="docutils literal notranslate"><span class="pre">&lt;options&gt;</span></code> 作为配置标志</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Configure-spl:</span> <span class="pre">&lt;options&gt;</span></code>：构建 SPL 时提供 <code class="docutils literal notranslate"><span class="pre">&lt;options&gt;</span></code> 作为配置标志</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Configure-zfs:</span> <span class="pre">&lt;options&gt;</span></code>：构建 ZFS 时提供 <code class="docutils literal notranslate"><span class="pre">&lt;options&gt;</span></code> 作为配置标志</p></li>
+</ul>
+<p>以下是一些如何在提交消息中使用覆盖的示例。</p>
+<section id="spl-ldiskfs-lustre">
+<h3>跳过构建 SPL 并在没有 ldiskfs 的情况下构建 Lustre<a class="headerlink" href="#spl-ldiskfs-lustre" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Build-lustre: Yes
+Configure-lustre: --disable-ldiskfs
+Build-spl: No
+</pre></div>
+</div>
+</section>
+<section id="zfs">
+<h3>仅构建 ZFS<a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>这是一个提交消息
+
+此文本是提交消息正文的一部分。
+
+Signed-off-by: 贡献者 &lt;contributor@email.com&gt;
+Build-lustre: No
+Build-spl: No
+</pre></div>
+</div>
+</section>
+</section>
+<section id="test">
+<h2>使用 TEST 文件配置测试<a class="headerlink" href="#test" title="Permalink to this heading"></a></h2>
+<p>在 ZFS 源代码树的顶层，有一个 <a class="reference external" href="https://github.com/zfsonlinux/zfs/blob/master/TEST">TEST 文件</a>，其中包含控制特定测试是否以及如何运行的变量。以下是每个变量的列表及其控制的简要描述。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_PREPARE_WATCHDOG</span></code> - 启用 Linux 内核看门狗</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_PREPARE_SHARES</span></code> - 启动 NFS 和 Samba 服务器</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_SPLAT_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">splat</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_SPLAT_OPTIONS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">splat</span></code> 的命令行选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZTEST_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">ztest</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZTEST_TIMEOUT</span></code> - <code class="docutils literal notranslate"><span class="pre">ztest</span></code> 应运行的时长</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZTEST_DIR</span></code> - <code class="docutils literal notranslate"><span class="pre">ztest</span></code> 创建 vdevs 的目录</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZTEST_OPTIONS</span></code> - 传递给 <code class="docutils literal notranslate"><span class="pre">ztest</span></code> 的选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZTEST_CORE_DIR</span></code> - <code class="docutils literal notranslate"><span class="pre">ztest</span></code> 存储核心转储的目录</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZIMPORT_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">zimport</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZIMPORT_DIR</span></code> - <code class="docutils literal notranslate"><span class="pre">zimport</span></code> 期间使用的目录</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZIMPORT_VERSIONS</span></code> - 要测试的源版本</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZIMPORT_POOLS</span></code> - <code class="docutils literal notranslate"><span class="pre">zimport</span></code> 用于测试的池名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZIMPORT_OPTIONS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">zimport</span></code> 的命令行选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_URL</span></code> - 下载 <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 的 URL</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_VER</span></code> - 从 <code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_URL</span></code> 下载的 tarball 名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_POOL</span></code> - 为 <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 创建和使用的池名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_FS</span></code> - <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 使用的数据集名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_VDEV</span></code> - <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 使用的 vdev 名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_XFSTESTS_OPTIONS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">xfstest</span></code> 的命令行选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">zfs-tests</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_DIR</span></code> - 存储文件和回环设备的目录</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_DISKS</span></code> - <code class="docutils literal notranslate"><span class="pre">zfs-tests</span></code> 允许使用的磁盘列表（以空格分隔）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_DISKSIZE</span></code> - <code class="docutils literal notranslate"><span class="pre">zfs-tests</span></code> 使用的基于文件的 vdev 的文件大小</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_ITERS</span></code> - <code class="docutils literal notranslate"><span class="pre">test-runner</span></code> 应执行其测试集的次数</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_OPTIONS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">zfs-tests</span></code> 的选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_RUNFILE</span></code> - 运行 <code class="docutils literal notranslate"><span class="pre">zfs-tests</span></code> 时使用的运行文件</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSTESTS_TAGS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">test-runner</span></code> 的标签列表</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_SKIP</span></code> - 确定是否跳过 <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 测试</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_URL</span></code> - 下载 <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 的 URL</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_VER</span></code> - 从 <code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_URL</span></code> 下载的 tarball 名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_RUNTIME</span></code> - 运行 <code class="docutils literal notranslate"><span class="pre">runstress.sh</span></code> 的时长</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_POOL</span></code> - 为 <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 测试创建和使用的池名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_FS</span></code> - <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 测试期间使用的数据集名称</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_FSOPT</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 的文件系统选项</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_VDEV</span></code> - <code class="docutils literal notranslate"><span class="pre">zfsstress</span></code> 测试期间使用的 vdev 存储目录</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TEST_ZFSSTRESS_OPTIONS</span></code> - 提供给 <code class="docutils literal notranslate"><span class="pre">runstress.sh</span></code> 的命令行选项</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

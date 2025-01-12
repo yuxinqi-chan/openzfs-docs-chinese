@@ -1,0 +1,135 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZFS I/O (ZIO) 调度器 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="基本概念" href="../Basic%20Concepts/index.html" />
+    <link rel="prev" title="ZFS 事务延迟" href="ZFS%20Transaction%20Delay.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">性能与调优</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Async%20Write.html">异步写入</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Hardware.html">硬件</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Module%20Parameters.html">Module Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Workload%20Tuning.html">工作负载调优</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ZFS%20Transaction%20Delay.html">ZFS 事务延迟</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">ZFS I/O (ZIO) 调度器</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">性能与调优</a></li>
+      <li class="breadcrumb-item active">ZFS I/O (ZIO) 调度器</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Performance and Tuning/ZIO Scheduler.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zfs-i-o-zio">
+<h1>ZFS I/O (ZIO) 调度器<a class="headerlink" href="#zfs-i-o-zio" title="Permalink to this heading"></a></h1>
+<p>ZFS 向叶子 vdev（通常是设备）发出 I/O 操作以满足并完成 I/O 请求。ZIO 调度器决定这些操作的发出时间和顺序。操作被分为五个 I/O 类别，按以下优先级排序：</p>
+<p>每个队列定义了向设备发出的并发操作的最小和最大数量。此外，设备还有一个总的最大值，即 zfs_vdev_max_active。请注意，每个队列的最小值之和不能超过总的最大值。如果每个队列的最大值之和超过总的最大值，则活动的 I/O 数量可能达到 zfs_vdev_max_active，在这种情况下，无论是否满足所有队列的最小值，都不会再发出更多的 I/O。</p>
+<p>对于许多物理设备，吞吐量随着并发操作数量的增加而增加，但延迟通常会受到影响。此外，物理设备通常有一个限制，超过该限制后，更多的并发操作对吞吐量没有影响，甚至可能导致磁盘性能下降。</p>
+<p>ZIO 调度器通过首先查找未满足最小值的 I/O 类别来选择下一个要发出的操作。一旦所有类别都满足且未达到总的最大值，调度器会查找未满足最大值的类别。按照上述顺序遍历 I/O 类别。如果已达到总的最大并发操作数量，或者没有为未达到最大值的 I/O 类别排队的操作，则不会发出更多的操作。每次 I/O 排队或操作完成时，I/O 调度器都会查找新的操作来发出。</p>
+<p>一般来说，较小的 max_active 值会导致同步操作的延迟较低。较大的 max_active 值可能会提高整体吞吐量，具体取决于底层存储和 I/O 混合情况。</p>
+<p>队列的 max_active 值的比率决定了读取、写入和扫描之间的性能平衡。例如，当存在争用时，增加 zfs_vdev_scrub_max_active 会使 scrub 或 resilver 更快完成，但读取和写入的延迟会更高，吞吐量会降低。</p>
+<p>所有 I/O 类别都有一个固定的最大未完成操作数量，除了异步写入类别。异步写入表示在事务组（txg）同步阶段提交到稳定存储的数据。事务组定期进入同步状态，因此排队的异步写入数量会迅速增加，然后减少到零。zfs_txg_timeout 可调参数（默认=5 秒）设置了 txg 同步的目标间隔。因此，每 5 秒一次的异步写入突发是 ZFS 的正常 I/O 模式。</p>
+<p>ZIO 调度器不是尽可能快地处理 I/O，而是根据池中脏数据的数量来调整异步写入 I/O 的最大活动数量。由于吞吐量和延迟通常随着向物理设备发出的并发操作数量的增加而增加，减少并发操作的突发性也稳定了其他队列操作的响应时间。这对于同步读取和写入队列尤为重要，因为 txg 同步的周期性异步写入突发可能导致设备级争用。简而言之，ZIO 调度器在池中有更多脏数据时，会从异步写入队列中发出更多的并发操作。</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ZFS%20Transaction%20Delay.html" class="btn btn-neutral float-left" title="ZFS 事务延迟" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../Basic%20Concepts/index.html" class="btn btn-neutral float-right" title="基本概念" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

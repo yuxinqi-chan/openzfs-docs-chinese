@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>功能标志 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="RAIDZ" href="RAIDZ.html" />
+    <link rel="prev" title="校验和及其在 ZFS 中的应用" href="Checksums.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">基本概念</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Checksums.html">校验和及其在 ZFS 中的应用</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">功能标志</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id2">兼容性</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">参考资料</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">各操作系统的功能标志实现</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RAIDZ.html">RAIDZ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Troubleshooting.html">故障排除</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dRAID%20Howto.html">dRAID</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">基本概念</a></li>
+      <li class="breadcrumb-item active">功能标志</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Basic Concepts/Feature Flags.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>功能标志<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h1>
+<p>ZFS 的磁盘格式最初是通过单一数字进行版本控制的，每当格式发生变化时，该数字就会增加。当 ZFS 的开发由单一组织推动时，这种编号方法是合适的。</p>
+<p>对于 OpenZFS 的分布式开发，版本编号不再适用。任何对编号的更改都需要在所有实现之间达成一致，以确保每次对磁盘格式的更改都能被接受。</p>
+<p>OpenZFS 功能标志——传统版本编号的替代方案——允许**为每次磁盘格式的更改分配一个唯一的池属性名称**。这种方法支持：</p>
+<ul class="simple">
+<li><p>独立的格式更改</p></li>
+<li><p>相互依赖的格式更改</p></li>
+</ul>
+<section id="id2">
+<h2>兼容性<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>如果一个池使用的所有*功能*都被多个 OpenZFS 实现支持，那么该磁盘格式在这些实现之间是可移植的。</p>
+<p>启用时具有排他性的功能应定期移植到所有发行版中。</p>
+</section>
+<section id="id3">
+<h2>参考资料<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p><a class="reference external" href="http://web.archive.org/web/20160419064650/http://blog.delphix.com/csiden/files/2012/01/ZFS_Feature_Flags.pdf">ZFS 功能标志</a>
+（Christopher Siden，2012-01，存档于互联网档案馆 Wayback Machine），特别是：“……池版本 1-28 的旧版版本号仍然存在……”。</p>
+<p><a class="reference external" href="../man/7/zpool-features.7.html">zpool-features(7) 手册页</a> - OpenZFS</p>
+<p><a class="reference external" href="http://illumos.org/man/5/zpool-features">zpool-features</a> (5) – illumos</p>
+</section>
+<section id="id4">
+<h2>各操作系统的功能标志实现<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<div class="man_container"><!DOCTYPE html>
+<title>ZFS Feature Matrix</title>
+<meta charset="utf-8" /><meta name="referrer" content="never" />
+<link rel='shortcut icon' href='/favicon.ico' type='image/x-icon'>
+<style>
+body {
+  font-family: "Helvetica", "Arial", sans-serif;
+}
+.yes {
+  background-color: lightgreen;
+}
+.warn {
+  background-color: yellow;
+}
+.no {
+  background-color: lightsalmon;
+}
+abbr {
+  text-decoration: none;
+}
+table {
+  border-collapse: collapse;
+  display: block;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+.name {
+  max-width: 19ch;
+}
+th,td {
+  padding: 0.2em 0.4em;
+  border: 1px solid #aaa;
+  background-color: #f9f9f9;
+}
+.line:hover {
+  filter: brightness(115%);
+}
+th {
+  background-color: #eaecf0;
+}
+.l {
+  display: inline-block;
+  text-align: right;
+  min-width: 17ex;
+  color: #777;
+}
+.r {
+  display: inline-block;
+  text-align: left;
+  min-width: 21ex;
+}
+.feature_col {
+  min-width: 39ch;
+}
+.rotate {
+  text-align: center;
+  vertical-align: middle;
+}
+.rotate span {
+  writing-mode: vertical-rl;
+  -webkit-writing-mode: vertical-rl;
+  transform: scale(-1);
+}
+.rocol {
+  min-width: 3em;
+}
+</style>
+<table>
+<tr><th scope="col" class="feature_col" rowspan="2">Feature Flag</th><th class="rotate rocol" scole="col" rowspan="2"><span>Read-Only<br />Compatible</span></th><th class="name" scope="col" colspan="7">OpenZFS (Linux, FreeBSD 13+)</th><th class="name" scope="col" colspan="2">FreeBSD pre OpenZFS</th><th class="name" scope="col" colspan="1">Illumos</th><th class="name" scope="col" colspan="1">Joyent</th><th class="name" scope="col" colspan="2">NetBSD</th><th class="name" scope="col" colspan="2">Nexenta</th><th class="name" scope="col" colspan="3">OmniOS CE</th><th class="name" scope="col" colspan="4">OpenZFS on OS X</th></tr>
+<tr><td class="rotate"><span>0.6.5.11</span></td><td class="rotate"><span>0.7.13</span></td><td class="rotate"><span>0.8.6</span></td><td class="rotate"><span>2.0.7</span></td><td class="rotate"><span>2.1.16</span></td><td class="rotate"><span>2.2.7</span></td><td class="rotate"><span>master</span></td><td class="rotate"><span>12.1.0</span></td><td class="rotate"><span>12.2.0</span></td><td class="rotate"><span>master</span></td><td class="rotate"><span>master</span></td><td class="rotate"><span>10.1</span></td><td class="rotate"><span>9.4</span></td><td class="rotate"><span>4.0.5-FP</span></td><td class="rotate"><span>master</span></td><td class="rotate"><span>r151050</span></td><td class="rotate"><span>r151052</span></td><td class="rotate"><span>master</span></td><td class="rotate"><span>2.2.0</span></td><td class="rotate"><span>2.2.2</span></td><td class="rotate"><span>2.2.3</span></td><td class="rotate"><span>main</span></td></tr>
+<tr class="line"><th scope="row"><span class="l">org.zfsonlinux:</span><span class="r">allocation_classes</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">async_destroy</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.openzfs:</span><span class="r">blake3</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.fudosecurity:</span><span class="r">block_cloning</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.datto:</span><span class="r">bookmark_v2</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">bookmark_written</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">bookmarks</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.nexenta:</span><span class="r">class_of_storage</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.openzfs:</span><span class="r">device_rebuild</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">device_removal</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.openzfs:</span><span class="r">draid</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.illumos:</span><span class="r">edonr</span></th><td class="warn">no</td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes<sup><a href="#note_1">1</a></sup></td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">embedded_data</span></th><td class="warn">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">empty_bpobj</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">enabled_txg</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.datto:</span><span class="r">encryption</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">extensible_dataset</span></th><td class="warn">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.klarasystems:</span><span class="r">fast_dedup</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.joyent:</span><span class="r">filesystem_limits</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">head_errlog</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">hole_birth</span></th><td class="warn">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.open-zfs:</span><span class="r">large_blocks</span></th><td class="warn">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.zfsonlinux:</span><span class="r">large_dnode</span></th><td class="warn">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.klarasystems:</span><span class="r">large_microzap</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">livelist</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">log_spacemap</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.zfsonlinux:</span><span class="r">longname</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.illumos:</span><span class="r">lz4_compress</span></th><td class="warn">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.nexenta:</span><span class="r">meta_devices</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.joyent:</span><span class="r">multi_vdev_crash_dump</span></th><td class="warn">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">obsolete_counts</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.zfsonlinux:</span><span class="r">project_quota</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.openzfs:</span><span class="r">raidz_expansion</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">redacted_datasets</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">redaction_bookmarks</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">redaction_list_spill</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.datto:</span><span class="r">resilver_defer</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.illumos:</span><span class="r">sha512</span></th><td class="warn">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.illumos:</span><span class="r">skein</span></th><td class="warn">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">spacemap_histogram</span></th><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">spacemap_v2</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.zfsonlinux:</span><span class="r">userobj_accounting</span></th><td class="yes">yes</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.nexenta:</span><span class="r">vdev_properties</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.klarasystems:</span><span class="r">vdev_zaps_v2</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.nexenta:</span><span class="r">wbc</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.openzfs:</span><span class="r">zilsaxattr</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">com.delphix:</span><span class="r">zpool_checkpoint</span></th><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+<tr class="line"><th scope="row"><span class="l">org.freebsd:</span><span class="r">zstd_compress</span></th><td class="warn">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="no">no</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+</table>
+<div>
+<h3>Notes:</h3>
+<ol>
+<li id="note_1"><a href="https://github.com/openzfs/zfs/pull/12735">Edonr support was not enabled in FreeBSD with OpenZFS up to 2.1 release included</a></li>
+</ol>
+</div>
+<p>Table generates by parsing manpages for feature flags, and is entirely dependent on good, accurate documentation.<br />Last updated on 2025-01-12T11:54:24.577430Z using <a href="https://github.com/openzfs/openzfs-docs/tree/master/scripts/compatibility_matrix.py">compatibility_matrix.py</a>.</p>
+</div></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Checksums.html" class="btn btn-neutral float-left" title="校验和及其在 ZFS 中的应用" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="RAIDZ.html" class="btn btn-neutral float-right" title="RAIDZ" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

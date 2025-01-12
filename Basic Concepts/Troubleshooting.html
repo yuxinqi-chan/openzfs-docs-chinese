@@ -1,0 +1,181 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>故障排除 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dRAID" href="dRAID%20Howto.html" />
+    <link rel="prev" title="RAIDZ" href="RAIDZ.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">基本概念</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Checksums.html">校验和及其在 ZFS 中的应用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Feature%20Flags.html">功能标志</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RAIDZ.html">RAIDZ</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">故障排除</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">关于日志文件</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">通用内核日志</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#zfs">ZFS内核模块调试信息</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">无法终止的进程</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">ZFS事件</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dRAID%20Howto.html">dRAID</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">基本概念</a></li>
+      <li class="breadcrumb-item active">故障排除</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Basic Concepts/Troubleshooting.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>故障排除<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h1>
+<div class="admonition-todo admonition" id="id2">
+<p class="admonition-title">Todo</p>
+<p>本页面为草稿。</p>
+</div>
+<p>本页面包含有关在Linux上排除ZFS故障的提示，以及开发人员在错误分类时可能需要的相关信息。</p>
+<ul class="simple">
+<li><p><a class="reference external" href="#about-log-files">关于日志文件</a></p>
+<ul>
+<li><p><a class="reference external" href="#generic-kernel-log">通用内核日志</a></p></li>
+<li><p><a class="reference external" href="#zfs-kernel-module-debug-messages">ZFS内核模块调试信息</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="#unkillable-process">无法终止的进程</a></p></li>
+<li><p><a class="reference external" href="#zfs-events">ZFS事件</a></p></li>
+</ul>
+<hr class="docutils" />
+<section id="id3">
+<h2>关于日志文件<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>日志文件对于故障排除非常有用。在某些情况下，相关信息会存储在多个日志文件中，并与系统事件相关联。</p>
+<p>专业提示：像 <em>elasticsearch</em>、<em>fluentd</em>、<em>influxdb</em> 或 <em>splunk</em> 这样的日志基础设施工具可以简化日志分析和事件关联。</p>
+<section id="id4">
+<h3>通用内核日志<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
+<p>通常，Linux内核日志消息可以通过 <code class="docutils literal notranslate"><span class="pre">dmesg</span> <span class="pre">-T</span></code>、<code class="docutils literal notranslate"><span class="pre">/var/log/syslog</span></code> 或内核日志消息发送的位置（例如通过 <code class="docutils literal notranslate"><span class="pre">rsyslogd</span></code>）获取。</p>
+</section>
+<section id="zfs">
+<h3>ZFS内核模块调试信息<a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h3>
+<p>ZFS内核模块使用内部日志缓冲区来记录详细的日志信息。在ZFS构建中，此日志信息可通过伪文件 <code class="docutils literal notranslate"><span class="pre">/proc/spl/kstat/zfs/dbgmsg</span></code> 获取，前提是ZFS模块参数 <a class="reference external" href="https://github.com/zfsonlinux/zfs/wiki/ZFS-on-Linux-Module-Parameters#zfs_dbgmsg_enable">zfs_dbgmsg_enable = 1</a>。</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>无法终止的进程<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h2>
+<p>症状：<code class="docutils literal notranslate"><span class="pre">zfs</span></code> 或 <code class="docutils literal notranslate"><span class="pre">zpool</span></code> 命令似乎挂起，无法返回，并且无法终止。</p>
+<p>可能原因：内核线程挂起或崩溃。</p>
+<p>相关日志文件：<a class="reference external" href="#generic-kernel-log">通用内核日志</a>、<a class="reference external" href="#zfs-kernel-module-debug-messages">ZFS内核模块调试信息</a>。</p>
+<p>重要信息：如果内核线程卡住，则日志中可能会有卡住线程的回溯信息。在某些情况下，卡住的线程直到死机计时器到期才会被记录。另请参阅 <a class="reference external" href="https://github.com/zfsonlinux/zfs/wiki/ZFS-on-Linux-Module-Parameters#debug">调试可调参数</a>。</p>
+</section>
+<hr class="docutils" />
+<section id="id6">
+<h2>ZFS事件<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
+<p>ZFS使用基于事件的消息接口与系统上运行的其他消费者进行重要事件的通信。ZFS事件守护程序（zed）是一个用户态守护程序，用于监听这些事件并处理它们。zed是可扩展的，因此您可以编写shell脚本或其他程序来订阅事件并采取行动。例如，通常安装在 <code class="docutils literal notranslate"><span class="pre">/etc/zfs/zed.d/all-syslog.sh</span></code> 的脚本会将格式化的事件消息写入 <code class="docutils literal notranslate"><span class="pre">syslog</span></code>。有关更多信息，请参阅 <code class="docutils literal notranslate"><span class="pre">zed(8)</span></code> 的手册页。</p>
+<p>事件历史记录也可以通过 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">events</span></code> 命令获取。此历史记录从ZFS内核模块加载开始，并包括来自任何池的事件。这些事件存储在RAM中，数量受内核可调参数 <a class="reference external" href="https://github.com/zfsonlinux/zfs/wiki/ZFS-on-Linux-Module-Parameters#zfs_zevent_len_max">zfs_event_len_max</a> 的限制。<code class="docutils literal notranslate"><span class="pre">zed</span></code> 具有内部节流机制，以防止处理ZFS事件时过度消耗系统资源。</p>
+<p>使用 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">events</span> <span class="pre">-v</span></code> 可以观察到更详细的事件信息。详细事件的内容可能会根据事件和事件发生时可用信息的变化而变化。</p>
+<p>每个事件都有一个用于过滤事件类型的类标识符。常见的事件是与池管理相关的事件，类为 <code class="docutils literal notranslate"><span class="pre">sysevent.fs.zfs.*</span></code>，包括导入、导出、配置更新和 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">history</span></code> 更新。</p>
+<p>与错误相关的事件报告为类 <code class="docutils literal notranslate"><span class="pre">ereport.*</span></code>。这些信息对于故障排除非常宝贵。某些故障可能会导致多个ereport，因为软件的各个层都在处理该故障。例如，在没有奇偶校验保护的简单池中，故障磁盘可能会导致读取磁盘时出现 <code class="docutils literal notranslate"><span class="pre">ereport.io</span></code>，进而在池级别产生 <code class="docutils literal notranslate"><span class="pre">erport.fs.zfs.checksum</span></code>。这些事件也反映在 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">status</span></code> 中观察到的错误计数器中。如果您在 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">status</span></code> 中看到校验和或读/写错误，那么在 <code class="docutils literal notranslate"><span class="pre">zpool</span> <span class="pre">events</span></code> 输出中应该有一个或多个相应的ereport。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="RAIDZ.html" class="btn btn-neutral float-left" title="RAIDZ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dRAID%20Howto.html" class="btn btn-neutral float-right" title="dRAID" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

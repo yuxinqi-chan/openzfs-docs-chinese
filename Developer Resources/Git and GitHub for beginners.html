@@ -1,0 +1,233 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Git 和 GitHub 初学者指南 (ZoL 版) &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Git 和 GitHub 初学者指南 (ZoL 版)</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Developer Resources/Git and GitHub for beginners.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="git-github-zol">
+<h1>Git 和 GitHub 初学者指南 (ZoL 版)<a class="headerlink" href="#git-github-zol" title="Permalink to this heading"></a></h1>
+<p>这是一个非常基础的指南，介绍如何使用 Git 和 GitHub 进行更改。</p>
+<p>推荐阅读: <a class="reference external" href="https://github.com/zfsonlinux/zfs/blob/master/.github/CONTRIBUTING.md">ZFS on Linux
+CONTRIBUTING.md</a></p>
+<section id="id1">
+<h2>首次设置<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>如果你从未使用过 Git，你需要进行一些设置才能开始。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="k">global</span> <span class="n">user</span><span class="o">.</span><span class="n">name</span> <span class="s2">&quot;我的名字&quot;</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="k">global</span> <span class="n">user</span><span class="o">.</span><span class="n">email</span> <span class="n">myemail</span><span class="nd">@noreply</span><span class="o">.</span><span class="n">non</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>克隆初始仓库<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>最简单的方法是点击主仓库页面顶部的 fork 图标。然后你需要将 fork 的仓库下载到你的电脑上：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/&lt;</span><span class="n">你的账户名</span><span class="o">&gt;/</span><span class="n">zfs</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>这将把你的 fork 仓库设置为 “origin”。这在创建拉取请求时会很有用。为了在更改时从 “upstream” 仓库拉取，将上游仓库添加为另一个远程仓库非常有用（参见 man git-remote）：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">zfs</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">upstream</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">zfsonlinux</span><span class="o">/</span><span class="n">zfs</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>准备和进行更改<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>为了进行更改，建议创建一个分支，这可以让你同时处理多个不相关的更改。除非你拥有该仓库，否则不建议在 master 分支上进行更改。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="n">我的新分支</span>
+</pre></div>
+</div>
+<p>从这里开始，你可以进行更改并继续下一步。</p>
+<p>推荐阅读: <a class="reference external" href="https://www.cis.upenn.edu/~lee/06cse480/data/cstyle.ms.pdf">C 风格和编码标准
+SunOS</a>,
+<a class="reference external" href="https://github.com/zfsonlinux/zfs/wiki/Developer-Resources">ZFS on Linux 开发者资源</a>,
+<a class="reference external" href="https://openzfs.org/wiki/Developer_resources">OpenZFS 开发者资源</a></p>
+</section>
+<section id="id4">
+<h2>推送前测试你的补丁<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<p>在提交和推送之前，你可能想测试你的补丁。你可以对你的分支运行多种测试，例如风格检查和功能测试。所有拉取请求在推送到主仓库之前都会经过这些测试，但在本地测试可以减轻构建/测试服务器的负担。此步骤是可选的，但强烈推荐，不过测试套件应在虚拟机或当前未使用 ZFS 的主机上运行。你可能需要安装 <code class="docutils literal notranslate"><span class="pre">shellcheck</span></code> 和 <code class="docutils literal notranslate"><span class="pre">flake8</span></code> 以正确运行 <code class="docutils literal notranslate"><span class="pre">checkstyle</span></code>。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sh</span> <span class="n">autogen</span><span class="o">.</span><span class="n">sh</span>
+<span class="o">./</span><span class="n">configure</span>
+<span class="n">make</span> <span class="n">checkstyle</span>
+</pre></div>
+</div>
+<p>推荐阅读: <a class="reference external" href="https://github.com/zfsonlinux/zfs/wiki/Building-ZFS">构建 ZFS</a>, <a class="reference external" href="https://github.com/zfsonlinux/zfs/blob/master/tests/README.md">ZFS 测试套件
+README</a></p>
+</section>
+<section id="id5">
+<h2>提交你的更改以推送<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h2>
+<p>当你完成对分支的更改后，在创建拉取请求之前还有几个步骤。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">--</span><span class="nb">all</span> <span class="o">--</span><span class="n">signoff</span>
+</pre></div>
+</div>
+<p>此命令会打开一个编辑器并添加你分支中所有未暂存的文件。在这里你需要描述你的更改并添加一些内容：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 请输入你的更改的提交信息。以 &#39;#&#39; 开头的行将被忽略，</span>
+<span class="c1"># 空消息将中止提交。</span>
+<span class="c1"># 位于分支 我的新分支</span>
+<span class="c1"># 要提交的更改：</span>
+<span class="c1">#   (使用 &quot;git reset HEAD &lt;文件&gt;...&quot; 取消暂存)</span>
+<span class="c1">#</span>
+<span class="c1">#   修改:   hello.c</span>
+<span class="c1">#</span>
+</pre></div>
+</div>
+<p>我们需要添加的第一件事是提交信息。这是显示在 git log 中的内容，应该是对更改的简短描述。根据风格指南，此信息必须少于 72 个字符。</p>
+<p>在提交信息下方，你可以为提交添加更详细的描述。此部分的行数必须少于 72 个字符。</p>
+<p>完成后，提交应如下所示：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>添加 hello 命令
+
+这是一个带有描述性提交信息的测试提交。
+此信息可以像这里显示的那样多行。
+
+Signed-off-by: 我的名字 &lt;myemail@noreply.non&gt;
+Closes #9998
+Issue #9999
+# 请输入你的更改的提交信息。以 &#39;#&#39; 开头的行将被忽略，
+# 空消息将中止提交。
+# 位于分支 我的新分支
+# 要提交的更改：
+#   (使用 &quot;git reset HEAD &lt;文件&gt;...&quot; 取消暂存)
+#
+#   修改:   hello.c
+#
+</pre></div>
+</div>
+<p>如果你正在为现有问题提交拉取请求，你还可以引用问题和拉取请求，如上所示。完成后保存并退出编辑器。</p>
+</section>
+<section id="id6">
+<h2>推送并创建拉取请求<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
+<p>最后一步。你已经完成了更改并提交了。现在是时候推送它了。</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="nb">set</span><span class="o">-</span><span class="n">upstream</span> <span class="n">origin</span> <span class="n">我的新分支</span>
+</pre></div>
+</div>
+<p>这将要求你输入 GitHub 凭据并将你的更改上传到你的仓库。</p>
+<p>最后一步是转到你的仓库或上游仓库的 GitHub 页面，你应该会看到一个按钮，用于为你最近提交的分支创建新的拉取请求。</p>
+</section>
+<section id="id7">
+<h2>修正拉取请求中的问题<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h2>
+<p>有时事情并不总是按计划进行，你可能需要更新你的拉取请求以修正提交信息或更改。这可以通过重新推送你的分支来完成。如果你需要进行代码更改或 <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span></code> 文件，你现在可以进行这些操作，然后执行以下命令：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">commit</span> <span class="o">--</span><span class="n">amend</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="n">force</span>
+</pre></div>
+</div>
+<p>这将返回到提交编辑器屏幕，并将你的更改推送到旧更改之上。请注意，这将重新启动任何正在运行的构建/测试服务器的进程，频繁推送可能会导致所有拉取请求的处理延迟。</p>
+</section>
+<section id="id8">
+<h2>维护你的仓库<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h2>
+<p>当你希望在未来进行更改时，你将需要一个最新的上游仓库副本来进行更改。以下是保持更新的方法：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">pull</span> <span class="n">upstream</span> <span class="n">master</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">master</span>
+</pre></div>
+</div>
+<p>这将确保你在仓库的 master 分支上，从上游获取更改，然后将它们推回你的仓库。</p>
+</section>
+<section id="id9">
+<h2>最后的建议<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h2>
+<p>这是一个非常基础的 Git 和 GitHub 介绍，但应该能让你开始为许多开源项目做出贡献。并非所有项目都有风格要求，有些项目可能有不同的提交更改流程，因此请参考他们的文档以查看是否需要做任何不同的事情。我们尚未涉及的一个主题是 <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">rebase</span></code> 命令，这对于本维基文章来说有点高级。</p>
+<p>额外资源: <a class="reference external" href="https://help.github.com/">Github 帮助</a>,
+<a class="reference external" href="https://www.atlassian.com/git/tutorials">Atlassian Git 教程</a></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

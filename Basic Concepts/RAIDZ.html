@@ -1,0 +1,178 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAIDZ &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="故障排除" href="Troubleshooting.html" />
+    <link rel="prev" title="功能标志" href="Feature%20Flags.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">基本概念</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Checksums.html">校验和及其在 ZFS 中的应用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Feature%20Flags.html">功能标志</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">RAIDZ</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">简介</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">空间效率</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">性能考虑</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id4">写入</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Troubleshooting.html">故障排除</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dRAID%20Howto.html">dRAID</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">基本概念</a></li>
+      <li class="breadcrumb-item active">RAIDZ</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Basic Concepts/RAIDZ.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="raidz">
+<h1>RAIDZ<a class="headerlink" href="#raidz" title="Permalink to this heading"></a></h1>
+<p>tl;dr: RAIDZ 对于大块大小和顺序工作负载是有效的。</p>
+<section id="id1">
+<h2>简介<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>RAIDZ 是 RAID-5 的一种变体，它允许更好的奇偶校验分布，并消除了 RAID-5 的“写漏洞”（在电源丢失后数据和奇偶校验变得不一致的情况）。
+数据和奇偶校验在 raidz 组内的所有磁盘上条带化分布。</p>
+<p>一个 raidz 组可以有单、双或三重奇偶校验，这意味着 raidz 组可以分别承受一、二或三次故障而不会丢失任何数据。<code class="docutils literal notranslate"><span class="pre">raidz1</span></code> vdev 类型指定了一个单奇偶校验的 raidz 组；<code class="docutils literal notranslate"><span class="pre">raidz2</span></code> vdev 类型指定了一个双奇偶校验的 raidz 组；<code class="docutils literal notranslate"><span class="pre">raidz3</span></code> vdev 类型指定了一个三重奇偶校验的 raidz 组。<code class="docutils literal notranslate"><span class="pre">raidz</span></code> vdev 类型是 raidz1 的别名。</p>
+<p>一个由 N 个大小为 X 的磁盘和 P 个奇偶校验磁盘组成的 raidz 组可以容纳大约 (N-P)*X 字节，并且可以承受 P 个设备故障而不丢失数据。raidz 组中的最小设备数量比奇偶校验磁盘的数量多一个。推荐的数量在 3 到 9 之间，以帮助提高性能。</p>
+</section>
+<section id="id2">
+<h2>空间效率<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>RAIDZ 中一个块的实际使用空间基于以下几点：</p>
+<ul class="simple">
+<li><p>最小写入大小是磁盘扇区大小（可以通过 <cite>ashift</cite> vdev 参数设置）</p></li>
+<li><p>RAIDZ 中的条带宽度是动态的，并且至少从一个数据块部分开始，或者最多到 <code class="docutils literal notranslate"><span class="pre">磁盘数量</span></code> 减去 <code class="docutils literal notranslate"><span class="pre">奇偶校验数量</span></code> 的数据块部分</p></li>
+<li><p>一个大小为 <code class="docutils literal notranslate"><span class="pre">recordsize</span></code> 的数据块被均等地分割成 <code class="docutils literal notranslate"><span class="pre">扇区大小</span></code> 部分，并写入 RAIDZ vdev 上的每个条带</p></li>
+<li><p>每个数据条带将有一个块的部分</p></li>
+<li><p>除了数据外，还应写入一、二或三个奇偶校验块，每个磁盘一个；因此，对于 5 个磁盘的 raidz2，将有 3 个数据块和 2 个奇偶校验块</p></li>
+</ul>
+<p>由于这些输入，如果 <code class="docutils literal notranslate"><span class="pre">recordsize</span></code> 小于或等于扇区大小，那么 RAIDZ 的奇偶校验大小将有效地等于具有相同冗余的镜像。例如，对于 <code class="docutils literal notranslate"><span class="pre">ashift=12</span></code> 和 <code class="docutils literal notranslate"><span class="pre">recordsize=4K</span></code> 的 3 个磁盘的 raidz1，我们将在磁盘上分配：</p>
+<ul class="simple">
+<li><p>一个 4K 的数据块</p></li>
+<li><p>一个 4K 的奇偶校验块</p></li>
+</ul>
+<p>可用空间比率将为 50%，与双镜像相同。</p>
+<p>另一个例子是 <code class="docutils literal notranslate"><span class="pre">ashift=12</span></code> 和 <code class="docutils literal notranslate"><span class="pre">recordsize=128K</span></code> 的 3 个磁盘的 raidz1：</p>
+<ul class="simple">
+<li><p>总条带宽度为 3</p></li>
+<li><p>一个条带最多可以有 2 个 4K 大小的数据部分，因为有一个奇偶校验块</p></li>
+<li><p>我们将有 128K/8k = 16 个条带，每个条带有 8K 的数据和 4K 的奇偶校验</p></li>
+<li><p>16 个条带每个有 12k，意味着我们写入 192k 来存储 128k</p></li>
+</ul>
+<p>因此，在这种情况下，可用空间比率将为 66%。</p>
+<p>RAIDZ 拥有的磁盘越多，条带越宽，空间效率越高。</p>
+<p>您可以在这里找到每个 RAIDZ 大小的实际奇偶校验成本：</p>
+<iframe src="https://docs.google.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/pub?embed=true" height="1000px" width="100%"></iframe><p>(<a class="reference external" href="https://docs.google.com/spreadsheets/d/1tf4qx1aMJp8Lo_R6gpT689wTjHv6CGVElrPqTA0w_ZY/edit">来源</a>)</p>
+</section>
+<section id="id3">
+<h2>性能考虑<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<section id="id4">
+<h3>写入<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
+<p>一个条带跨越阵列中的所有驱动器。一个块的写入将把条带部分写入每个磁盘。
+在最坏的情况下，RAIDZ vdev 的写入 IOPS 是阵列中最慢磁盘的 IOPS，因为所有条带部分的写入操作必须在每个磁盘上完成。</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Feature%20Flags.html" class="btn btn-neutral float-left" title="功能标志" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Troubleshooting.html" class="btn btn-neutral float-right" title="故障排除" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

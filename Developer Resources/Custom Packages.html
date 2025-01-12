@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>自定义包 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">自定义包</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Developer Resources/Custom Packages.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>自定义包<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h1>
+<p>以下说明假设您是从官方发布的 <a class="reference external" href="https://github.com/zfsonlinux/zfs">release tarball &lt;https://github.com/zfsonlinux/zfs/releases/latest&gt;`__（版本 0.8.0 或更新版本）或直接从 `git 仓库</a> 构建的。大多数用户不需要这样做，应该优先使用发行版提供的包。一般来说，发行版提供的包会更紧密地集成、经过更广泛的测试，并且得到更好的支持。然而，如果您选择的发行版没有提供包，或者您是开发人员并希望自己构建包，以下是具体方法。</p>
+<p>首先需要注意的是，构建系统能够生成几种不同类型的包。您选择哪种类型的包取决于您的平台支持什么以及您的具体需求。</p>
+<ul class="simple">
+<li><p><strong>DKMS</strong> 包仅包含源代码和用于重新构建内核模块的脚本。安装 DKMS 包后，将为所有可用的内核构建内核模块。此外，当内核升级时，将自动为该内核构建新的内核模块。这对于频繁接收内核更新的桌面系统特别方便。缺点是，由于 DKMS 包从源代码构建内核模块，因此需要完整的开发环境，这可能不适合大规模部署。</p></li>
+<li><p><strong>kmods</strong> 包是针对特定版本内核编译的二进制内核模块。这意味着如果您更新内核，则必须编译并安装新的 kmod 包。如果您不经常更新内核，或者您正在管理大量系统，那么 kmod 包是一个不错的选择。</p></li>
+<li><p><strong>kABI-tracking kmod</strong> 包与标准的二进制 kmods 类似，可用于像 Red Hat 和 CentOS 这样的企业 Linux 发行版。这些发行版提供了稳定的 kABI（内核应用程序二进制接口），允许相同的二进制模块与新版本的发行版内核一起使用。</p></li>
+</ul>
+<p>默认情况下，构建系统将生成用户包以及 DKMS 和 kmod 风格的内核包（如果可能）。用户包可以与任何一组内核包一起使用，并且在内核更新时不需要重新构建。您还可以通过仅构建 DKMS 或 kmod 包来简化构建过程，如下所示。</p>
+<p>请注意，当直接从 git 仓库构建时，您必须首先运行 <em>autogen.sh</em> 脚本来创建 <em>configure</em> 脚本。这将需要为您的发行版安装 GNU autotools 包。要执行任何构建，您必须安装所有必要的开发工具和头文件。</p>
+<p>需要注意的是，如果当前运行内核的开发内核头文件未安装，模块将无法正确编译。</p>
+<ul class="simple">
+<li><p><a class="reference external" href="#red-hat-centos-and-fedora">Red Hat、CentOS 和 Fedora</a></p></li>
+<li><p><a class="reference external" href="#debian-and-ubuntu">Debian 和 Ubuntu</a></p></li>
+</ul>
+<section id="rhelcentos-fedora">
+<h2>RHEL、CentOS 和 Fedora<a class="headerlink" href="#rhelcentos-fedora" title="Permalink to this heading"></a></h2>
+<p>确保已安装构建最新 ZFS 2.1 版本所需的包：</p>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 7</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>epel-release<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>libudev-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>elfutils-libelf-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>python<span class="w"> </span>python2-devel<span class="w"> </span>python-setuptools<span class="w"> </span>python-cffi<span class="w"> </span>libffi-devel<span class="w"> </span>ncompress
+sudo<span class="w"> </span>yum<span class="w"> </span>install<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>dkms<span class="w"> </span>python-packaging
+</pre></div>
+</div>
+<p><strong>注意：</strong> RHEL/CentOS 7 已停止支持。请使用 yum 而不是 dnf 进行安装。</p>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 8</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>epel-release<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>kernel-rpm-macros<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>libudev-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>elfutils-libelf-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>kernel-abi-stablelists-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\.[^.]\+$//&#39;</span><span class="k">)</span><span class="w"> </span>python3<span class="w"> </span>python3-devel<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-cffi<span class="w"> </span>libffi-devel<span class="w"> </span>ncompress
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>--enablerepo<span class="o">=</span>powertools<span class="w"> </span>python3-packaging<span class="w"> </span>dkms
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>RHEL/CentOS 9</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>config-manager<span class="w"> </span>--set-enabled<span class="w"> </span>crb
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>epel-release<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>kernel-rpm-macros<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>libudev-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>elfutils-libelf-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>kernel-abi-stablelists-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;s/\.[^.]\+$//&#39;</span><span class="k">)</span><span class="w"> </span>python3<span class="w"> </span>python3-devel<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-cffi<span class="w"> </span>libffi-devel
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>--skip-broken<span class="w"> </span>--enablerepo<span class="o">=</span>epel<span class="w"> </span>python3-packaging<span class="w"> </span>dkms
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>Fedora 41</strong>:</p></li>
+</ul>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>gcc<span class="w"> </span>make<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>rpm-build<span class="w"> </span>kernel-rpm-macros<span class="w"> </span>libtirpc-devel<span class="w"> </span>libblkid-devel<span class="w"> </span>libuuid-devel<span class="w"> </span>systemd-devel<span class="w"> </span>openssl-devel<span class="w"> </span>zlib-ng-compat-devel<span class="w"> </span>libaio-devel<span class="w"> </span>libattr-devel<span class="w"> </span>libffi-devel<span class="w"> </span>libunwind-devel<span class="w"> </span>kernel-devel-<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span><span class="w"> </span>python3<span class="w"> </span>python3-devel<span class="w"> </span>openssl<span class="w"> </span>ncompress
+sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>python3-packaging<span class="w"> </span>dkms
+</pre></div>
+</div>
+<p><a class="reference external" href="#get-the-source-code">获取源代码</a>。</p>
+<section id="dkms">
+<h3>DKMS<a class="headerlink" href="#dkms" title="Permalink to this heading"></a></h3>
+<p>构建基于 RPM 的 DKMS 和用户包可以按以下步骤进行：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure
+$<span class="w"> </span>make<span class="w"> </span>-j1<span class="w"> </span>rpm-utils<span class="w"> </span>rpm-dkms
+$<span class="w"> </span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>*.<span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span>.rpm<span class="w"> </span>*.noarch.rpm
+</pre></div>
+</div>
+</section>
+<section id="kmod">
+<h3>kmod<a class="headerlink" href="#kmod" title="Permalink to this heading"></a></h3>
+<p>构建 kmod 包时，关键是要知道必须指定一个特定的 Linux 内核。在配置时，构建系统会猜测您要针对哪个内核进行构建。然而，如果配置无法找到您的内核开发头文件，或者您想针对不同的内核进行构建，则必须使用 <em>–with-linux</em> 和 <em>–with-linux-obj</em> 选项指定确切路径。</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure
+$<span class="w"> </span>make<span class="w"> </span>-j1<span class="w"> </span>rpm-utils<span class="w"> </span>rpm-kmod
+$<span class="w"> </span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>*.<span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span>.rpm<span class="w"> </span>*.noarch.rpm
+</pre></div>
+</div>
+<p><strong>注意：</strong> Fedora 41 Workstation 包含 rpm 包 zfs-fuse，这会阻止您安装自己的包。在 dnf install 之前删除该包：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>rpm<span class="w"> </span>-e<span class="w"> </span>--nodeps<span class="w"> </span>zfs-fuse
+</pre></div>
+</div>
+</section>
+<section id="kabi-tracking-kmod">
+<h3>kABI-tracking kmod<a class="headerlink" href="#kabi-tracking-kmod" title="Permalink to this heading"></a></h3>
+<p>构建 kABI-tracking kmods 的过程与构建普通 kmods 几乎相同。但是，它只会生成可用于多个内核的二进制文件，前提是发行版支持稳定的 kABI。为了请求 kABI-tracking 包，必须在配置时传递 <em>–with-spec=redhat</em> 选项。</p>
+<p><strong>注意：</strong> 这种类型的包不适用于 Fedora。</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure<span class="w"> </span>--with-spec<span class="o">=</span>redhat
+$<span class="w"> </span>make<span class="w"> </span>-j1<span class="w"> </span>rpm-utils<span class="w"> </span>rpm-kmod
+$<span class="w"> </span>sudo<span class="w"> </span>dnf<span class="w"> </span>install<span class="w"> </span>*.<span class="k">$(</span>uname<span class="w"> </span>-m<span class="k">)</span>.rpm<span class="w"> </span>*.noarch.rpm
+</pre></div>
+</div>
+</section>
+<section id="fedora-41-kmod">
+<h3>Fedora 41 安全启动与 kmod<a class="headerlink" href="#fedora-41-kmod" title="Permalink to this heading"></a></h3>
+<p>在使用 UEFI 和安全启动的现代计算机上，zfs 内核模块将无法加载：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo modprobe zfs
+modprobe: ERROR: could not insert &#39;zfs&#39;: Key was rejected by service
+</pre></div>
+</div>
+<p>要么禁用安全启动，要么创建一次自定义机器所有者密钥 (MOK) 并使用该密钥手动签名当前和未来的模块：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>mkdir<span class="w"> </span>/etc/pki/mok
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/etc/pki/mok
+$<span class="w"> </span>sudo<span class="w"> </span>openssl<span class="w"> </span>req<span class="w"> </span>-new<span class="w"> </span>-x509<span class="w"> </span>-newkey<span class="w"> </span>rsa:2048<span class="w"> </span>-keyout<span class="w"> </span>LOCALMOK.priv<span class="w"> </span>-outform<span class="w"> </span>DER<span class="w"> </span>-out<span class="w"> </span>LOCALMOK.der<span class="w"> </span>-nodes<span class="w"> </span>-days<span class="w"> </span><span class="m">36500</span><span class="w"> </span>-subj<span class="w"> </span><span class="s2">&quot;/CN=LOCALMOK/&quot;</span>
+$<span class="w"> </span>sudo<span class="w"> </span>mokutil<span class="w"> </span>--import<span class="w"> </span>LOCALMOK.der
+</pre></div>
+</div>
+<p>Mokutil 会要求您创建并记住一个密码，然后重新启动您的机器，UEFI 将要求导入您的密钥：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">选择</span> <span class="s2">&quot;Enroll MOK&quot;</span><span class="p">,</span> <span class="s2">&quot;Continue&quot;</span><span class="p">,</span> <span class="s2">&quot;Yes&quot;</span><span class="p">,</span> <span class="n">输入</span> <span class="n">mokutil</span> <span class="n">的密码</span><span class="p">,</span> <span class="s2">&quot;Reboot&quot;</span>
+</pre></div>
+</div>
+<p>然后可以使用此 MOK 手动签名您的 zfs 内核模块：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ rpm -ql kmod-zfs-$(uname -r) | grep .ko
+/lib/modules/6.11.8-300.fc41.x86_64/extra/zfs/spl.ko
+/lib/modules/6.11.8-300.fc41.x86_64/extra/zfs/zfs.ko
+</pre></div>
+</div>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>/usr/src/kernels/<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span>/scripts/sign-file<span class="w"> </span>sha256<span class="w"> </span>/etc/pki/mok/LOCALMOK.priv<span class="w"> </span>/etc/pki/mok/LOCALMOK.der<span class="w"> </span>/lib/modules/<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span>/extra/zfs/spl.ko
+$<span class="w"> </span>sudo<span class="w"> </span>/usr/src/kernels/<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span>/scripts/sign-file<span class="w"> </span>sha256<span class="w"> </span>/etc/pki/mok/LOCALMOK.priv<span class="w"> </span>/etc/pki/mok/LOCALMOK.der<span class="w"> </span>/lib/modules/<span class="k">$(</span>uname<span class="w"> </span>-r<span class="k">)</span>/extra/zfs/zfs.ko
+</pre></div>
+</div>
+<p>加载模块并验证其是否处于活动状态：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo modprobe zfs
+
+$ lsmod | grep zfs
+zfs                  6930432  0
+spl                   155648  1 zfs
+</pre></div>
+</div>
+</section>
+</section>
+<section id="debian-ubuntu">
+<h2>Debian 和 Ubuntu<a class="headerlink" href="#debian-ubuntu" title="Permalink to this heading"></a></h2>
+<p>确保已安装所需的包：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>build-essential<span class="w"> </span>autoconf<span class="w"> </span>automake<span class="w"> </span>libtool<span class="w"> </span>gawk<span class="w"> </span>alien<span class="w"> </span>fakeroot<span class="w"> </span>dkms<span class="w"> </span>libblkid-dev<span class="w"> </span>uuid-dev<span class="w"> </span>libudev-dev<span class="w"> </span>libssl-dev<span class="w"> </span>zlib1g-dev<span class="w"> </span>libaio-dev<span class="w"> </span>libattr1-dev<span class="w"> </span>libelf-dev<span class="w"> </span>linux-headers-generic<span class="w"> </span>python3<span class="w"> </span>python3-dev<span class="w"> </span>python3-setuptools<span class="w"> </span>python3-cffi<span class="w"> </span>libffi-dev<span class="w"> </span>python3-packaging<span class="w"> </span>debhelper-compat<span class="w"> </span>dh-python<span class="w"> </span>po-debconf<span class="w"> </span>python3-all-dev<span class="w"> </span>python3-sphinx<span class="w"> </span>libpam0g-dev
+</pre></div>
+</div>
+<p><a class="reference external" href="#get-the-source-code">获取源代码</a>。</p>
+<section id="kmod-1">
+<span id="id2"></span><h3>kmod<a class="headerlink" href="#kmod-1" title="Permalink to this heading"></a></h3>
+<p>构建 kmod 包时，关键是要知道必须指定一个特定的 Linux 内核。在配置时，构建系统会猜测您要针对哪个内核进行构建。然而，如果配置无法找到您的内核开发头文件，或者您想针对不同的内核进行构建，则必须使用 <em>–with-linux</em> 和 <em>–with-linux-obj</em> 选项指定确切路径。</p>
+<p>要构建转换为 RPM 的 Debian 包：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure<span class="w"> </span>--enable-systemd
+$<span class="w"> </span>make<span class="w"> </span>-j1<span class="w"> </span>deb-utils<span class="w"> </span>deb-kmod
+$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>--fix-missing<span class="w"> </span>./*.deb
+</pre></div>
+</div>
+<p>从 openzfs-2.2 版本开始，可以按以下方式构建原生 Debian 包：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure
+$<span class="w"> </span>make<span class="w"> </span>native-deb-utils<span class="w"> </span>native-deb-kmod
+$<span class="w"> </span>rm<span class="w"> </span>../openzfs-zfs-dkms_*.deb
+$<span class="w"> </span>rm<span class="w"> </span>../openzfs-zfs-dracut_*.deb<span class="w">  </span><span class="c1"># deb-based 系统通常使用 initramfs</span>
+$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>--fix-missing<span class="w"> </span>../*.deb
+</pre></div>
+</div>
+<p>原生 Debian 包使用为 Debian 和 Ubuntu 预配置的路径构建。最好不要在配置期间覆盖路径。可以导出 <code class="docutils literal notranslate"><span class="pre">KVERS</span></code>、<code class="docutils literal notranslate"><span class="pre">KSRC</span></code> 和 <code class="docutils literal notranslate"><span class="pre">KOBJ</span></code> 环境变量以指定安装在非默认位置的内核。</p>
+</section>
+<section id="dkms-1">
+<span id="id3"></span><h3>DKMS<a class="headerlink" href="#dkms-1" title="Permalink to this heading"></a></h3>
+<p>构建转换为 RPM 的基于 deb 的 DKMS 和用户包可以按以下步骤进行：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure<span class="w"> </span>--enable-systemd
+$<span class="w"> </span>make<span class="w"> </span>-j1<span class="w"> </span>deb-utils<span class="w"> </span>deb-dkms
+$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>--fix-missing<span class="w"> </span>./*.deb
+</pre></div>
+</div>
+<p>从 openzfs-2.2 版本开始，可以按以下方式构建基于 deb 的原生 DKMS 和用户包：</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>dh-dkms
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./configure
+$<span class="w"> </span>make<span class="w"> </span>native-deb-utils
+$<span class="w"> </span>rm<span class="w"> </span>../openzfs-zfs-dracut_*.deb<span class="w">  </span><span class="c1"># deb-based 系统通常使用 initramfs</span>
+$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>--fix-missing<span class="w"> </span>../*.deb
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id4">
+<h2>获取源代码<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<section id="tarball">
+<h3>发布的 Tarball<a class="headerlink" href="#tarball" title="Permalink to this heading"></a></h3>
+<p>发布的 tarball 包含最新经过全面测试和发布的 ZFS 版本。这是生产系统中使用的首选源代码位置。如果您想使用官方发布的 tarball，请使用以下命令获取并准备源代码。</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>wget<span class="w"> </span>http://archive.zfsonlinux.org/downloads/zfsonlinux/zfs/zfs-x.y.z.tar.gz
+$<span class="w"> </span>tar<span class="w"> </span>-xzf<span class="w"> </span>zfs-x.y.z.tar.gz
+</pre></div>
+</div>
+</section>
+<section id="git">
+<h3>Git 主分支<a class="headerlink" href="#git" title="Permalink to this heading"></a></h3>
+<p>Git <em>master</em> 分支包含软件的最新版本，并且可能包含由于某种原因未包含在发布 tarball 中的修复。这是打算修改 ZFS 的开发人员的首选源代码位置。如果您想使用 git 版本，可以从 Github 克隆并准备源代码，如下所示。</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/zfsonlinux/zfs.git
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>zfs
+$<span class="w"> </span>./autogen.sh
+</pre></div>
+</div>
+<p>准备好源代码后，您需要决定要构建哪种类型的包，并跳转到上面的相应部分。请注意，并非所有平台都支持所有包类型。</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>校验和及其在 ZFS 中的应用 &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="功能标志" href="Feature%20Flags.html" />
+    <link rel="prev" title="基本概念" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Project%20and%20Community/index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">基本概念</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">校验和及其在 ZFS 中的应用</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id1">校验和算法</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id2">校验和加速器</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id3">校验和微基准测试</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">禁用校验和</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="Feature%20Flags.html">功能标志</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RAIDZ.html">RAIDZ</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Troubleshooting.html">故障排除</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dRAID%20Howto.html">dRAID</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">基本概念</a></li>
+      <li class="breadcrumb-item active">校验和及其在 ZFS 中的应用</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Basic Concepts/Checksums.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="zfs">
+<h1>校验和及其在 ZFS 中的应用<a class="headerlink" href="#zfs" title="Permalink to this heading"></a></h1>
+<p>端到端校验和是 ZFS 的一个关键特性，也是 ZFS 区别于其他 RAID 实现和文件系统的重要特点。端到端校验和的优势包括：</p>
+<ul class="simple">
+<li><p>在从介质读取数据时检测数据损坏</p></li>
+<li><p>如果可能，检测到损坏的块会自动修复，通过适当配置的池中的 RAID 保护或冗余副本（参见 zfs 的 <code class="docutils literal notranslate"><span class="pre">copies</span></code> 属性）</p></li>
+<li><p>定期擦洗可以检查数据，以检测和修复潜在的介质退化（位腐烂）和其他来源的损坏</p></li>
+<li><p>ZFS 复制流（<code class="docutils literal notranslate"><span class="pre">zfs</span> <span class="pre">send</span></code> 和 <code class="docutils literal notranslate"><span class="pre">zfs</span> <span class="pre">receive</span></code>）上的校验和确保接收的数据不会被中间存储或传输机制损坏</p></li>
+</ul>
+<section id="id1">
+<h2>校验和算法<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p>ZFS 中的校验和算法可以针对数据集（文件系统或卷）进行更改。每个块使用的校验和算法存储在块指针（元数据）中。块的校验和在写入块时计算，因此更改算法仅影响更改后发生的写入操作。</p>
+<p>可以通过设置 <code class="docutils literal notranslate"><span class="pre">checksum</span></code> 属性来更改数据集的校验和算法：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>zfs<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">checksum</span><span class="o">=</span>sha256<span class="w"> </span>池名/数据集名
+</pre></div>
+</div>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>校验和</p></th>
+<th class="head"><p>适用于去重
+和 nopwrite?</p></th>
+<th class="head"><p>与其他 ZFS
+实现兼容？</p></th>
+<th class="head"><p>备注</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>on</p></td>
+<td><p>参见备注</p></td>
+<td><p>是</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">on</span></code> 是
+<code class="docutils literal notranslate"><span class="pre">fletcher4</span></code> 的简写
+用于非去重数据集，
+以及 <code class="docutils literal notranslate"><span class="pre">sha256</span></code> 用于
+去重数据集</p></td>
+</tr>
+<tr class="row-odd"><td><p>off</p></td>
+<td><p>否</p></td>
+<td><p>是</p></td>
+<td><p>不要使用
+<code class="docutils literal notranslate"><span class="pre">off</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>fletcher2</p></td>
+<td><p>否</p></td>
+<td><p>是</p></td>
+<td><p>已弃用的 Fletcher
+校验和实现，请使用
+<code class="docutils literal notranslate"><span class="pre">fletcher4</span></code> 代替</p></td>
+</tr>
+<tr class="row-odd"><td><p>fletcher4</p></td>
+<td><p>否</p></td>
+<td><p>是</p></td>
+<td><p>Fletcher 算法，
+也用于
+<code class="docutils literal notranslate"><span class="pre">zfs</span> <span class="pre">send</span></code> 流</p></td>
+</tr>
+<tr class="row-even"><td><p>sha256</p></td>
+<td><p>是</p></td>
+<td><p>是</p></td>
+<td><p>去重数据集的
+默认算法</p></td>
+</tr>
+<tr class="row-odd"><td><p>noparity</p></td>
+<td><p>否</p></td>
+<td><p>是</p></td>
+<td><p>不要使用
+<code class="docutils literal notranslate"><span class="pre">noparity</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>sha512</p></td>
+<td><p>是</p></td>
+<td><p>需要池特性
+<code class="docutils literal notranslate"><span class="pre">org.illumos:sha512</span></code></p></td>
+<td><p>加盐的 <code class="docutils literal notranslate"><span class="pre">sha512</span></code>，
+目前不支持任何
+启动池上的文件系统</p></td>
+</tr>
+<tr class="row-odd"><td><p>skein</p></td>
+<td><p>是</p></td>
+<td><p>需要池特性
+<code class="docutils literal notranslate"><span class="pre">org.illumos:skein</span></code></p></td>
+<td><p>加盐的 <code class="docutils literal notranslate"><span class="pre">skein</span></code>，
+目前不支持任何
+启动池上的文件系统</p></td>
+</tr>
+<tr class="row-even"><td><p>edonr</p></td>
+<td><p>参见备注</p></td>
+<td><p>需要池特性
+<code class="docutils literal notranslate"><span class="pre">org.illumos:edonr</span></code></p></td>
+<td><p>加盐的 <code class="docutils literal notranslate"><span class="pre">edonr</span></code>，
+目前不支持任何
+启动池上的文件系统</p>
+<p>出于谨慎考虑，Edon-R
+在与去重一起使用时需要
+验证，因此它将自动使用
+<code class="docutils literal notranslate"><span class="pre">verify</span></code>。</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p>blake3</p></td>
+<td><p>是</p></td>
+<td><p>需要池特性
+<code class="docutils literal notranslate"><span class="pre">org.openzfs:blake3</span></code></p></td>
+<td><p>加盐的 <code class="docutils literal notranslate"><span class="pre">blake3</span></code>，
+目前不支持任何
+启动池上的文件系统</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id2">
+<h2>校验和加速器<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<p>ZFS 能够将校验和操作卸载到 Intel QuickAssist Technology (QAT) 适配器上。</p>
+</section>
+<section id="id3">
+<h2>校验和微基准测试<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p>某些 ZFS 功能在加载 <code class="docutils literal notranslate"><span class="pre">zfs.ko</span></code> 内核模块时使用微基准测试来确定校验和的最佳算法。微基准测试的结果可以在 <code class="docutils literal notranslate"><span class="pre">/proc/spl/kstat/zfs</span></code> 目录中观察到。获胜的算法被报告为“最快的”，并成为默认算法。可以通过设置 zfs 模块参数来覆盖默认值。</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>校验和</p></th>
+<th class="head"><p>结果文件名</p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">zfs</span></code> 模块参数</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Fletcher4</p></td>
+<td><p>/proc/spl/kstat/zfs/fletcher_4_bench</p></td>
+<td><p>zfs_fletcher_4_impl</p></td>
+</tr>
+<tr class="row-odd"><td><p>all-other</p></td>
+<td><p>/proc/spl/kstat/zfs/chksum_bench</p></td>
+<td><p>zfs_blake3_impl,
+zfs_sha256_impl,
+zfs_sha512_impl</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id4">
+<h2>禁用校验和<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<p>虽然禁用校验和可能会提高 CPU 性能，但 ZFS 社区普遍认为这是一个极其糟糕的想法。不要禁用校验和。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="基本概念" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Feature%20Flags.html" class="btn btn-neutral float-right" title="功能标志" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

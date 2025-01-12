@@ -1,0 +1,138 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ 空洞创建时间 (hole_birth) &mdash; OpenZFS  documentation</title>
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme_overrides.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/mandoc.css" type="text/css" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=b3ba4146"></script>
+      <script src="../_static/doctools.js?v=888ff710"></script>
+      <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #29667e" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo_main.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../Getting%20Started/index.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">项目和社区</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Developer%20Resources/index.html">开发者资源</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Performance%20and%20Tuning/index.html">性能与调优</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Basic%20Concepts/index.html">基本概念</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../man/index.html">Man Pages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../msg/index.html">ZFS Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../License.html">License</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #29667e" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">OpenZFS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">FAQ 空洞创建时间 (hole_birth)</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/openzfs/openzfs-docs/blob/master/docs/Project and Community/FAQ hole birth.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="faq-hole-birth">
+<h1>FAQ 空洞创建时间 (hole_birth)<a class="headerlink" href="#faq-hole-birth" title="Permalink to this heading"></a></h1>
+<section id="id1">
+<h2>简短说明<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<p><cite>hole_birth</cite> 功能存在（或曾经存在）一些错误，导致的结果是，如果你从一个受影响的数据集执行 <cite>zfs send -i`（或 `-R</cite>，因为它使用了 <cite>-i</cite>），接收方不会看到任何校验和或其他错误，但生成的目标快照将与源快照不匹配。</p>
+<p>ZoL 版本 0.6.5.8 和 0.7.0-rc1（及以上版本）默认忽略导致此问题的错误元数据 <em>在发送方</em>。</p>
+</section>
+<section id="faq">
+<h2>FAQ<a class="headerlink" href="#faq" title="Permalink to this heading"></a></h2>
+<section id="hole-birth">
+<h3>我有一个启用了 <cite>hole_birth</cite> 的池，如何知道我是否受到影响？<a class="headerlink" href="#hole-birth" title="Permalink to this heading"></a></h3>
+<p>从技术上讲，可以计算你是否受到任何影响，但这需要为每个数据集中的每个快照中的每个文件抓取 <cite>zdb</cite> 输出，这是一个组合噩梦。（如果你真的想要，这里有一个概念验证 <a class="reference external" href="https://github.com/rincebrain/hole_birth_test">这里</a>。</p>
+</section>
+<section id="id2">
+<h3>如果我们已经接收到一个受影响的快照，是否有不那么痛苦的方式来修复这个问题？<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
+<p>不幸的是，没有。你所需的数据根本没有出现在发送流中，并且无法在目标位置进行重写。</p>
+</section>
+</section>
+<section id="id3">
+<h2>详细说明<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<p><cite>hole_birth</cite> 是一个用于加速 <cite>zfs send -i</cite> 的功能——特别是，ZFS 过去不存储文件中的“空洞”（稀疏区域）创建时间的元数据，因此每次 <cite>zfs send -i</cite> 都需要包含每个空洞。</p>
+<p><cite>hole_birth</cite>，顾名思义，添加了对空洞创建时的 <cite>txg`（事务组）的跟踪，以便 `zfs send -i</cite> 可以只发送在（起始快照的 <cite>txg</cite>）和（结束快照的 <cite>txg</cite>）之间创建的空洞，生活变得美好。</p>
+<p>不幸的是，<cite>hole_birth</cite> 在某些情况下可能会“忘记”设置空洞的 <cite>birth_time</cite>，导致它记录 <cite>birth_time</cite> 为 0（在 <cite>hole_birth</cite> 之前使用的值，基本上等同于“自文件创建以来”）。</p>
+<p>这意味着，当你执行 <cite>zfs send -i</cite> 时，由于 <cite>zfs send</cite> 在发送给定快照时没有任何关于周围快照的知识，它会看到创建 <cite>txg</cite> 为 0，得出结论“哦，它是 0，我肯定之前已经发送过这个了”，然后不包含它。</p>
+<p>这意味着，在接收方，它不知道这些空洞应该存在，因此不会创建它们。这导致源和目标之间的差异。</p>
+<p>ZoL 版本 0.6.5.8 和 0.7.0-rc1（及以上版本）默认忽略此元数据，并始终发送 <cite>birth_time</cite> 为 0 的空洞，可通过调优参数 <cite>ignore_hole_birth</cite> 或 <cite>send_holes_without_birth_time</cite> 进行配置。后者是 OpenZFS 标准化的名称。ZoL 版本 0.6.5.8 只有前者，但对于任何具有 <cite>send_holes_without_birth_time</cite> 的 ZoL 版本，它们指向相同的值，因此更改其中任何一个都会生效。</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, OpenZFS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
