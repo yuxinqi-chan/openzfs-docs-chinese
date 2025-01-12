@@ -1,39 +1,23 @@
-ZFS Transaction Delay
+ZFS 事务延迟
 =====================
 
-ZFS write operations are delayed when the backend storage isn't able to
-accommodate the rate of incoming writes. This delay process is known as
-the ZFS write throttle.
+当后端存储无法适应传入写入的速率时，ZFS 写入操作会被延迟。这个延迟过程被称为 ZFS 写入节流。
 
-If there is already a write transaction waiting, the delay is relative
-to when that transaction will finish waiting. Thus the calculated delay
-time is independent of the number of threads concurrently executing
-transactions.
+如果已经有一个写入事务在等待，延迟是相对于该事务完成等待的时间计算的。因此，计算的延迟时间与并发执行事务的线程数量无关。
 
-If there is only one waiter, the delay is relative to when the
-transaction started, rather than the current time. This credits the
-transaction for "time already served." For example, if a write
-transaction requires reading indirect blocks first, then the delay is
-counted at the start of the transaction, just prior to the indirect
-block reads.
+如果只有一个等待者，延迟是相对于事务开始的时间计算的，而不是当前时间。这为事务“已经服务的时间”提供了信用。例如，如果一个写入事务需要先读取间接块，则延迟在事务开始时计算，就在间接块读取之前。
 
-The minimum time for a transaction to take is calculated as:
+事务的最小时间计算如下：
 
 ::
 
    min_time = zfs_delay_scale * (dirty - min) / (max - dirty)
-   min_time is then capped at 100 milliseconds
+   min_time 然后被限制在 100 毫秒
 
-The delay has two degrees of freedom that can be adjusted via tunables:
+延迟有两个可以通过可调参数调整的自由度：
 
-1. The percentage of dirty data at which we start to delay is defined by
-   zfs_delay_min_dirty_percent. This is typically be at or above
-   zfs_vdev_async_write_active_max_dirty_percent so delays occur after
-   writing at full speed has failed to keep up with the incoming write
-   rate.
-2. The scale of the curve is defined by zfs_delay_scale. Roughly
-   speaking, this variable determines the amount of delay at the
-   midpoint of the curve.
+1. 开始延迟的脏数据百分比由 zfs_delay_min_dirty_percent 定义。这通常位于或高于 zfs_vdev_async_write_active_max_dirty_percent，以便在全速写入无法跟上传入写入速率后发生延迟。
+2. 曲线的比例由 zfs_delay_scale 定义。粗略地说，这个变量决定了曲线中点的延迟量。
 
 ::
 
@@ -61,15 +45,9 @@ The delay has two degrees of freedom that can be adjusted via tunables:
        0 +-------------------------------------*********----------------+
          0%                    <- zfs_dirty_data_max ->               100%
 
-Note that since the delay is added to the outstanding time remaining on
-the most recent transaction, the delay is effectively the inverse of
-IOPS. Here the midpoint of 500 microseconds translates to 2000 IOPS. The
-shape of the curve was chosen such that small changes in the amount of
-accumulated dirty data in the first 3/4 of the curve yield relatively
-small differences in the amount of delay.
+请注意，由于延迟是添加到最近事务的剩余未完成时间上的，延迟实际上是 IOPS 的倒数。这里的中点 500 微秒转换为 2000 IOPS。选择曲线的形状使得在曲线的前 3/4 部分，脏数据量的微小变化会产生相对较小的延迟差异。
 
-The effects can be easier to understand when the amount of delay is
-represented on a log scale:
+当延迟量以对数刻度表示时，效果更容易理解：
 
 ::
 
@@ -97,9 +75,4 @@ represented on a log scale:
          +--------------------------------------------------------------+
          0%                    <- zfs_dirty_data_max ->               100%
 
-Note here that only as the amount of dirty data approaches its limit
-does the delay start to increase rapidly. The goal of a properly tuned
-system should be to keep the amount of dirty data out of that range by
-first ensuring that the appropriate limits are set for the I/O scheduler
-to reach optimal throughput on the backend storage, and then by changing
-the value of zfs_delay_scale to increase the steepness of the curve.
+请注意，只有当脏数据量接近其限制时，延迟才开始迅速增加。适当调优的系统的目标应该是通过首先确保为 I/O 调度器设置适当的限制以达到后端存储的最佳吞吐量，然后通过更改 zfs_delay_scale 的值来增加曲线的陡度，从而将脏数据量保持在该范围之外。

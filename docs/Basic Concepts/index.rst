@@ -1,9 +1,9 @@
-Basic Concepts
+基本概念
 ==============
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: 目录:
    :glob:
 
    *

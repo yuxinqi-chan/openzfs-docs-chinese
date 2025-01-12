@@ -1,8 +1,7 @@
-Async Writes
+异步写入
 ============
 
-The number of concurrent operations issued for the async write I/O class
-follows a piece-wise linear function defined by a few adjustable points.
+异步写入 I/O 类的并发操作数量遵循由几个可调整点定义的分段线性函数。
 
 ::
 
@@ -20,17 +19,6 @@ follows a piece-wise linear function defined by a few adjustable points.
                   |      `-- zfs_vdev_async_write_active_max_dirty_percent
                   `--------- zfs_vdev_async_write_active_min_dirty_percent
 
-Until the amount of dirty data exceeds a minimum percentage of the dirty
-data allowed in the pool, the I/O scheduler will limit the number of
-concurrent operations to the minimum. As that threshold is crossed, the
-number of concurrent operations issued increases linearly to the maximum
-at the specified maximum percentage of the dirty data allowed in the
-pool.
+在脏数据量超过池中允许的脏数据的最小百分比之前，I/O 调度程序将限制并发操作的数量为最小值。当超过该阈值时，并发操作的数量将线性增加，直到达到池中允许的脏数据的最大百分比。
 
-Ideally, the amount of dirty data on a busy pool will stay in the sloped
-part of the function between
-zfs_vdev_async_write_active_min_dirty_percent and
-zfs_vdev_async_write_active_max_dirty_percent. If it exceeds the maximum
-percentage, this indicates that the rate of incoming data is greater
-than the rate that the backend storage can handle. In this case, we must
-further throttle incoming writes, as described in the next section.
+理想情况下，繁忙池中的脏数据量应保持在 zfs_vdev_async_write_active_min_dirty_percent 和 zfs_vdev_async_write_active_max_dirty_percent 之间的函数斜率部分。如果超过最大百分比，则表明传入数据的速率大于后端存储可以处理的速率。在这种情况下，必须进一步限制传入的写入操作，如下一节所述。

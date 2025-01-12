@@ -1,248 +1,187 @@
-Buildbot Options
+Buildbot 选项
 ================
 
-There are a number of ways to control the ZFS Buildbot at a commit
-level. This page provides a summary of various options that the ZFS
-Buildbot supports and how it impacts testing. More detailed information
-regarding its implementation can be found at the `ZFS Buildbot Github
-page <https://github.com/zfsonlinux/zfs-buildbot>`__.
+在提交级别上，有多种方式可以控制 ZFS Buildbot。本页提供了 ZFS Buildbot 支持的各种选项的摘要及其对测试的影响。有关其实现的更多详细信息，请访问 `ZFS Buildbot Github 页面 <https://github.com/zfsonlinux/zfs-buildbot>`__。
 
-Choosing Builders
+选择构建器
 -----------------
 
-By default, all commits in your ZFS pull request are compiled by the
-BUILD builders. Additionally, the top commit of your ZFS pull request is
-tested by TEST builders. However, there is the option to override which
-types of builder should be used on a per commit basis. In this case, you
-can add
-``Requires-builders: <none|all|style|build|arch|distro|test|perf|coverage|unstable>``
-to your commit message. A comma separated list of options can be
-provided. Supported options are:
+默认情况下，ZFS 拉取请求中的所有提交都会由 BUILD 构建器进行编译。此外，ZFS 拉取请求的顶部提交会由 TEST 构建器进行测试。然而，您可以选择在每个提交的基础上覆盖应使用的构建器类型。在这种情况下，您可以在提交消息中添加
+``Requires-builders: <none|all|style|build|arch|distro|test|perf|coverage|unstable>``。可以提供逗号分隔的选项列表。支持的选项有：
 
--  ``all``: This commit should be built by all available builders
--  ``none``: This commit should not be built by any builders
--  ``style``: This commit should be built by STYLE builders
--  ``build``: This commit should be built by all BUILD builders
--  ``arch``: This commit should be built by BUILD builders tagged as
-   'Architectures'
--  ``distro``: This commit should be built by BUILD builders tagged as
-   'Distributions'
--  ``test``: This commit should be built and tested by the TEST builders
-   (excluding the Coverage TEST builders)
--  ``perf``: This commit should be built and tested by the PERF builders
--  ``coverage`` : This commit should be built and tested by the Coverage
-   TEST builders
--  ``unstable`` : This commit should be built and tested by the Unstable
-   TEST builders (currently only the Fedora Rawhide TEST builder)
+-  ``all``：此提交应由所有可用的构建器构建
+-  ``none``：此提交不应由任何构建器构建
+-  ``style``：此提交应由 STYLE 构建器构建
+-  ``build``：此提交应由所有 BUILD 构建器构建
+-  ``arch``：此提交应由标记为“架构”的 BUILD 构建器构建
+-  ``distro``：此提交应由标记为“发行版”的 BUILD 构建器构建
+-  ``test``：此提交应由 TEST 构建器构建和测试（不包括 Coverage TEST 构建器）
+-  ``perf``：此提交应由 PERF 构建器构建和测试
+-  ``coverage``：此提交应由 Coverage TEST 构建器构建和测试
+-  ``unstable``：此提交应由 Unstable TEST 构建器构建和测试（目前仅限 Fedora Rawhide TEST 构建器）
 
-A couple of examples on how to use ``Requires-builders:`` in commit
-messages can be found below.
+以下是一些如何在提交消息中使用 ``Requires-builders:`` 的示例。
 
-.. _preventing-a-commit-from-being-built-and-tested:
+.. _防止提交被构建和测试:
 
-Preventing a commit from being built and tested.
+防止提交被构建和测试
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Requires-builders: none
 
-.. _submitting-a-commit-to-style-and-test-builders-only:
+.. _将提交仅提交给 STYLE 和 TEST 构建器:
 
-Submitting a commit to STYLE and TEST builders only.
+将提交仅提交给 STYLE 和 TEST 构建器
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Requires-builders: style test
 
-Requiring SPL Versions
+要求 SPL 版本
 ----------------------
 
-Currently, the ZFS Buildbot attempts to choose the correct SPL branch to
-build based on a pull request's base branch. In the cases where a
-specific SPL version needs to be built, the ZFS buildbot supports
-specifying an SPL version for pull request testing. By opening a pull
-request against ZFS and adding ``Requires-spl:`` in a commit message,
-you can instruct the buildbot to use a specific SPL version. Below are
-examples of a commit messages that specify the SPL version.
+目前，ZFS Buildbot 尝试根据拉取请求的基础分支选择正确的 SPL 分支进行构建。在需要构建特定 SPL 版本的情况下，ZFS Buildbot 支持为拉取请求测试指定 SPL 版本。通过打开针对 ZFS 的拉取请求并在提交消息中添加 ``Requires-spl:``，您可以指示 Buildbot 使用特定的 SPL 版本。以下是指定 SPL 版本的提交消息示例。
 
-Build SPL from a specific pull request
+从特定拉取请求构建 SPL
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Requires-spl: refs/pull/123/head
 
-Build SPL branch ``spl-branch-name`` from ``zfsonlinux/spl`` repository
+从 ``zfsonlinux/spl`` 仓库构建 SPL 分支 ``spl-branch-name``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Requires-spl: spl-branch-name
 
-Requiring Kernel Version
+要求内核版本
 ------------------------
 
-Currently, Kernel.org builders will clone and build the master branch of
-Linux. In cases where a specific version of the Linux kernel needs to be
-built, the ZFS buildbot supports specifying the Linux kernel to be built
-via commit message. By opening a pull request against ZFS and adding
-``Requires-kernel:`` in a commit message, you can instruct the buildbot
-to use a specific Linux kernel. Below is an example commit message that
-specifies a specific Linux kernel tag.
+目前，Kernel.org 构建器将克隆并构建 Linux 的主分支。在需要构建特定版本的 Linux 内核的情况下，ZFS Buildbot 支持通过提交消息指定要构建的 Linux 内核。通过打开针对 ZFS 的拉取请求并在提交消息中添加 ``Requires-kernel:``，您可以指示 Buildbot 使用特定的 Linux 内核。以下是指定特定 Linux 内核标签的提交消息示例。
 
-.. _build-linux-kernel-version-414:
+.. _构建 Linux 内核版本 4.14:
 
-Build Linux Kernel Version 4.14
+构建 Linux 内核版本 4.14
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Requires-kernel: v4.14
 
-Build Steps Overrides
+构建步骤覆盖
 ---------------------
 
-Each builder will execute or skip build steps based on its default
-preferences. In some scenarios, it might be possible to skip various
-build steps. The ZFS buildbot supports overriding the defaults of all
-builders in a commit message. The list of available overrides are:
+每个构建器将根据其默认偏好执行或跳过构建步骤。在某些情况下，可能会跳过各种构建步骤。ZFS Buildbot 支持在提交消息中覆盖所有构建器的默认设置。可用的覆盖选项包括：
 
--  ``Build-linux: <Yes|No>``: All builders should build Linux for this
-   commit
--  ``Build-lustre: <Yes|No>``: All builders should build Lustre for this
-   commit
--  ``Build-spl: <Yes|No>``: All builders should build the SPL for this
-   commit
--  ``Build-zfs: <Yes|No>``: All builders should build ZFS for this
-   commit
--  ``Built-in: <Yes|No>``: All Linux builds should build in SPL and ZFS
--  ``Check-lint: <Yes|No>``: All builders should perform lint checks for
-   this commit
--  ``Configure-lustre: <options>``: Provide ``<options>`` as configure
-   flags when building Lustre
--  ``Configure-spl: <options>``: Provide ``<options>`` as configure
-   flags when building the SPL
--  ``Configure-zfs: <options>``: Provide ``<options>`` as configure
-   flags when building ZFS
+-  ``Build-linux: <Yes|No>``：所有构建器应为此提交构建 Linux
+-  ``Build-lustre: <Yes|No>``：所有构建器应为此提交构建 Lustre
+-  ``Build-spl: <Yes|No>``：所有构建器应为此提交构建 SPL
+-  ``Build-zfs: <Yes|No>``：所有构建器应为此提交构建 ZFS
+-  ``Built-in: <Yes|No>``：所有 Linux 构建应内置 SPL 和 ZFS
+-  ``Check-lint: <Yes|No>``：所有构建器应为此提交执行 lint 检查
+-  ``Configure-lustre: <options>``：构建 Lustre 时提供 ``<options>`` 作为配置标志
+-  ``Configure-spl: <options>``：构建 SPL 时提供 ``<options>`` 作为配置标志
+-  ``Configure-zfs: <options>``：构建 ZFS 时提供 ``<options>`` 作为配置标志
 
-A couple of examples on how to use overrides in commit messages can be
-found below.
+以下是一些如何在提交消息中使用覆盖的示例。
 
-Skip building the SPL and build Lustre without ldiskfs
+跳过构建 SPL 并在没有 ldiskfs 的情况下构建 Lustre
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Build-lustre: Yes
    Configure-lustre: --disable-ldiskfs
    Build-spl: No
 
-Build ZFS Only
+仅构建 ZFS
 ~~~~~~~~~~~~~~
 
 ::
 
-   This is a commit message
+   这是一个提交消息
 
-   This text is part of the commit message body.
+   此文本是提交消息正文的一部分。
 
-   Signed-off-by: Contributor <contributor@email.com>
+   Signed-off-by: 贡献者 <contributor@email.com>
    Build-lustre: No
    Build-spl: No
 
-Configuring Tests with the TEST File
+使用 TEST 文件配置测试
 ------------------------------------
 
-At the top level of the ZFS source tree, there is the `TEST
-file <https://github.com/zfsonlinux/zfs/blob/master/TEST>`__ which
-contains variables that control if and how a specific test should run.
-Below is a list of each variable and a brief description of what each
-variable controls.
+在 ZFS 源代码树的顶层，有一个 `TEST 文件 <https://github.com/zfsonlinux/zfs/blob/master/TEST>`__，其中包含控制特定测试是否以及如何运行的变量。以下是每个变量的列表及其控制的简要描述。
 
--  ``TEST_PREPARE_WATCHDOG`` - Enables the Linux kernel watchdog
--  ``TEST_PREPARE_SHARES`` - Start NFS and Samba servers
--  ``TEST_SPLAT_SKIP`` - Determines if ``splat`` testing is skipped
--  ``TEST_SPLAT_OPTIONS`` - Command line options to provide to ``splat``
--  ``TEST_ZTEST_SKIP`` - Determines if ``ztest`` testing is skipped
--  ``TEST_ZTEST_TIMEOUT`` - The length of time ``ztest`` should run
--  ``TEST_ZTEST_DIR`` - Directory where ``ztest`` will create vdevs
--  ``TEST_ZTEST_OPTIONS`` - Options to pass to ``ztest``
--  ``TEST_ZTEST_CORE_DIR`` - Directory for ``ztest`` to store core dumps
--  ``TEST_ZIMPORT_SKIP`` - Determines if ``zimport`` testing is skipped
--  ``TEST_ZIMPORT_DIR`` - Directory used during ``zimport``
--  ``TEST_ZIMPORT_VERSIONS`` - Source versions to test
--  ``TEST_ZIMPORT_POOLS`` - Names of the pools for ``zimport`` to use
-   for testing
--  ``TEST_ZIMPORT_OPTIONS`` - Command line options to provide to
-   ``zimport``
--  ``TEST_XFSTESTS_SKIP`` - Determines if ``xfstest`` testing is skipped
--  ``TEST_XFSTESTS_URL`` - URL to download ``xfstest`` from
--  ``TEST_XFSTESTS_VER`` - Name of the tarball to download from
-   ``TEST_XFSTESTS_URL``
--  ``TEST_XFSTESTS_POOL`` - Name of pool to create and used by
-   ``xfstest``
--  ``TEST_XFSTESTS_FS`` - Name of dataset for use by ``xfstest``
--  ``TEST_XFSTESTS_VDEV`` - Name of the vdev used by ``xfstest``
--  ``TEST_XFSTESTS_OPTIONS`` - Command line options to provide to
-   ``xfstest``
--  ``TEST_ZFSTESTS_SKIP`` - Determines if ``zfs-tests`` testing is
-   skipped
--  ``TEST_ZFSTESTS_DIR`` - Directory to store files and loopback devices
--  ``TEST_ZFSTESTS_DISKS`` - Space delimited list of disks that
-   ``zfs-tests`` is allowed to use
--  ``TEST_ZFSTESTS_DISKSIZE`` - File size of file based vdevs used by
-   ``zfs-tests``
--  ``TEST_ZFSTESTS_ITERS`` - Number of times ``test-runner`` should
-   execute its set of tests
--  ``TEST_ZFSTESTS_OPTIONS`` - Options to provide ``zfs-tests``
--  ``TEST_ZFSTESTS_RUNFILE`` - The runfile to use when running
-   ``zfs-tests``
--  ``TEST_ZFSTESTS_TAGS`` - List of tags to provide to ``test-runner``
--  ``TEST_ZFSSTRESS_SKIP`` - Determines if ``zfsstress`` testing is
-   skipped
--  ``TEST_ZFSSTRESS_URL`` - URL to download ``zfsstress`` from
--  ``TEST_ZFSSTRESS_VER`` - Name of the tarball to download from
-   ``TEST_ZFSSTRESS_URL``
--  ``TEST_ZFSSTRESS_RUNTIME`` - Duration to run ``runstress.sh``
--  ``TEST_ZFSSTRESS_POOL`` - Name of pool to create and use for
-   ``zfsstress`` testing
--  ``TEST_ZFSSTRESS_FS`` - Name of dataset for use during ``zfsstress``
-   tests
--  ``TEST_ZFSSTRESS_FSOPT`` - File system options to provide to
-   ``zfsstress``
--  ``TEST_ZFSSTRESS_VDEV`` - Directory to store vdevs for use during
-   ``zfsstress`` tests
--  ``TEST_ZFSSTRESS_OPTIONS`` - Command line options to provide to
-   ``runstress.sh``
+-  ``TEST_PREPARE_WATCHDOG`` - 启用 Linux 内核看门狗
+-  ``TEST_PREPARE_SHARES`` - 启动 NFS 和 Samba 服务器
+-  ``TEST_SPLAT_SKIP`` - 确定是否跳过 ``splat`` 测试
+-  ``TEST_SPLAT_OPTIONS`` - 提供给 ``splat`` 的命令行选项
+-  ``TEST_ZTEST_SKIP`` - 确定是否跳过 ``ztest`` 测试
+-  ``TEST_ZTEST_TIMEOUT`` - ``ztest`` 应运行的时长
+-  ``TEST_ZTEST_DIR`` - ``ztest`` 创建 vdevs 的目录
+-  ``TEST_ZTEST_OPTIONS`` - 传递给 ``ztest`` 的选项
+-  ``TEST_ZTEST_CORE_DIR`` - ``ztest`` 存储核心转储的目录
+-  ``TEST_ZIMPORT_SKIP`` - 确定是否跳过 ``zimport`` 测试
+-  ``TEST_ZIMPORT_DIR`` - ``zimport`` 期间使用的目录
+-  ``TEST_ZIMPORT_VERSIONS`` - 要测试的源版本
+-  ``TEST_ZIMPORT_POOLS`` - ``zimport`` 用于测试的池名称
+-  ``TEST_ZIMPORT_OPTIONS`` - 提供给 ``zimport`` 的命令行选项
+-  ``TEST_XFSTESTS_SKIP`` - 确定是否跳过 ``xfstest`` 测试
+-  ``TEST_XFSTESTS_URL`` - 下载 ``xfstest`` 的 URL
+-  ``TEST_XFSTESTS_VER`` - 从 ``TEST_XFSTESTS_URL`` 下载的 tarball 名称
+-  ``TEST_XFSTESTS_POOL`` - 为 ``xfstest`` 创建和使用的池名称
+-  ``TEST_XFSTESTS_FS`` - ``xfstest`` 使用的数据集名称
+-  ``TEST_XFSTESTS_VDEV`` - ``xfstest`` 使用的 vdev 名称
+-  ``TEST_XFSTESTS_OPTIONS`` - 提供给 ``xfstest`` 的命令行选项
+-  ``TEST_ZFSTESTS_SKIP`` - 确定是否跳过 ``zfs-tests`` 测试
+-  ``TEST_ZFSTESTS_DIR`` - 存储文件和回环设备的目录
+-  ``TEST_ZFSTESTS_DISKS`` - ``zfs-tests`` 允许使用的磁盘列表（以空格分隔）
+-  ``TEST_ZFSTESTS_DISKSIZE`` - ``zfs-tests`` 使用的基于文件的 vdev 的文件大小
+-  ``TEST_ZFSTESTS_ITERS`` - ``test-runner`` 应执行其测试集的次数
+-  ``TEST_ZFSTESTS_OPTIONS`` - 提供给 ``zfs-tests`` 的选项
+-  ``TEST_ZFSTESTS_RUNFILE`` - 运行 ``zfs-tests`` 时使用的运行文件
+-  ``TEST_ZFSTESTS_TAGS`` - 提供给 ``test-runner`` 的标签列表
+-  ``TEST_ZFSSTRESS_SKIP`` - 确定是否跳过 ``zfsstress`` 测试
+-  ``TEST_ZFSSTRESS_URL`` - 下载 ``zfsstress`` 的 URL
+-  ``TEST_ZFSSTRESS_VER`` - 从 ``TEST_ZFSSTRESS_URL`` 下载的 tarball 名称
+-  ``TEST_ZFSSTRESS_RUNTIME`` - 运行 ``runstress.sh`` 的时长
+-  ``TEST_ZFSSTRESS_POOL`` - 为 ``zfsstress`` 测试创建和使用的池名称
+-  ``TEST_ZFSSTRESS_FS`` - ``zfsstress`` 测试期间使用的数据集名称
+-  ``TEST_ZFSSTRESS_FSOPT`` - 提供给 ``zfsstress`` 的文件系统选项
+-  ``TEST_ZFSSTRESS_VDEV`` - ``zfsstress`` 测试期间使用的 vdev 存储目录
+-  ``TEST_ZFSSTRESS_OPTIONS`` - 提供给 ``runstress.sh`` 的命令行选项

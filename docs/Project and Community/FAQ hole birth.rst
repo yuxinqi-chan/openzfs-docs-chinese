@@ -1,67 +1,39 @@
 :orphan:
 
-FAQ Hole birth
-==============
+FAQ 空洞创建时间 (hole_birth)
+=============================
 
-Short explanation
-~~~~~~~~~~~~~~~~~
+简短说明
+~~~~~~~~
 
-The hole_birth feature has/had bugs, the result of which is that, if you
-do a ``zfs send -i`` (or ``-R``, since it uses ``-i``) from an affected
-dataset, the receiver will not see any checksum or other errors, but the
-resulting destination snapshot will not match the source.
+`hole_birth` 功能存在（或曾经存在）一些错误，导致的结果是，如果你从一个受影响的数据集执行 `zfs send -i`（或 `-R`，因为它使用了 `-i`），接收方不会看到任何校验和或其他错误，但生成的目标快照将与源快照不匹配。
 
-ZoL versions 0.6.5.8 and 0.7.0-rc1 (and above) default to ignoring the
-faulty metadata which causes this issue *on the sender side*.
+ZoL 版本 0.6.5.8 和 0.7.0-rc1（及以上版本）默认忽略导致此问题的错误元数据 *在发送方*。
 
 FAQ
 ~~~
 
-I have a pool with hole_birth enabled, how do I know if I am affected?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+我有一个启用了 `hole_birth` 的池，如何知道我是否受到影响？
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-It is technically possible to calculate whether you have any affected
-files, but it requires scraping zdb output for each file in each
-snapshot in each dataset, which is a combinatoric nightmare. (If you
-really want it, there is a proof of concept
-`here <https://github.com/rincebrain/hole_birth_test>`__.
+从技术上讲，可以计算你是否受到任何影响，但这需要为每个数据集中的每个快照中的每个文件抓取 `zdb` 输出，这是一个组合噩梦。（如果你真的想要，这里有一个概念验证 `这里 <https://github.com/rincebrain/hole_birth_test>`__。
 
-Is there any less painful way to fix this if we have already received an affected snapshot?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+如果我们已经接收到一个受影响的快照，是否有不那么痛苦的方式来修复这个问题？
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-No, the data you need was simply not present in the send stream,
-unfortunately, and cannot feasibly be rewritten in place.
+不幸的是，没有。你所需的数据根本没有出现在发送流中，并且无法在目标位置进行重写。
 
-Long explanation
-~~~~~~~~~~~~~~~~
+详细说明
+~~~~~~~~
 
-hole_birth is a feature to speed up ZFS send -i - in particular, ZFS
-used to not store metadata on when "holes" (sparse regions) in files
-were created, so every zfs send -i needed to include every hole.
+`hole_birth` 是一个用于加速 `zfs send -i` 的功能——特别是，ZFS 过去不存储文件中的“空洞”（稀疏区域）创建时间的元数据，因此每次 `zfs send -i` 都需要包含每个空洞。
 
-hole_birth, as the name implies, added tracking for the txg (transaction
-group) when a hole was created, so that zfs send -i could only send
-holes that had a birth_time between (starting snapshot txg) and (ending
-snapshot txg), and life was wonderful.
+`hole_birth`，顾名思义，添加了对空洞创建时的 `txg`（事务组）的跟踪，以便 `zfs send -i` 可以只发送在（起始快照的 `txg`）和（结束快照的 `txg`）之间创建的空洞，生活变得美好。
 
-Unfortunately, hole_birth had a number of edge cases where it could
-"forget" to set the birth_time of holes in some cases, causing it to
-record the birth_time as 0 (the value used prior to hole_birth, and
-essentially equivalent to "since file creation").
+不幸的是，`hole_birth` 在某些情况下可能会“忘记”设置空洞的 `birth_time`，导致它记录 `birth_time` 为 0（在 `hole_birth` 之前使用的值，基本上等同于“自文件创建以来”）。
 
-This meant that, when you did a zfs send -i, since zfs send does not
-have any knowledge of the surrounding snapshots when sending a given
-snapshot, it would see the creation txg as 0, conclude "oh, it is 0, I
-must have already sent this before", and not include it.
+这意味着，当你执行 `zfs send -i` 时，由于 `zfs send` 在发送给定快照时没有任何关于周围快照的知识，它会看到创建 `txg` 为 0，得出结论“哦，它是 0，我肯定之前已经发送过这个了”，然后不包含它。
 
-This means that, on the receiving side, it does not know those holes
-should exist, and does not create them. This leads to differences
-between the source and the destination.
+这意味着，在接收方，它不知道这些空洞应该存在，因此不会创建它们。这导致源和目标之间的差异。
 
-ZoL versions 0.6.5.8 and 0.7.0-rc1 (and above) default to ignoring this
-metadata and always sending holes with birth_time 0, configurable using
-the tunable known as ``ignore_hole_birth`` or
-``send_holes_without_birth_time``. The latter is what OpenZFS
-standardized on. ZoL version 0.6.5.8 only has the former, but for any
-ZoL version with ``send_holes_without_birth_time``, they point to the
-same value, so changing either will work.
+ZoL 版本 0.6.5.8 和 0.7.0-rc1（及以上版本）默认忽略此元数据，并始终发送 `birth_time` 为 0 的空洞，可通过调优参数 `ignore_hole_birth` 或 `send_holes_without_birth_time` 进行配置。后者是 OpenZFS 标准化的名称。ZoL 版本 0.6.5.8 只有前者，但对于任何具有 `send_holes_without_birth_time` 的 ZoL 版本，它们指向相同的值，因此更改其中任何一个都会生效。

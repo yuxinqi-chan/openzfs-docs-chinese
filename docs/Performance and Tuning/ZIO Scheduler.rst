@@ -1,93 +1,46 @@
-ZFS I/O (ZIO) Scheduler
+ZFS I/O (ZIO) 调度器
 =======================
 
-ZFS issues I/O operations to leaf vdevs (usually devices) to satisfy and
-complete I/Os. The ZIO scheduler determines when and in what order those
-operations are issued. Operations are divided into five I/O classes
-prioritized in the following order:
+ZFS 向叶子 vdev（通常是设备）发出 I/O 操作以满足并完成 I/O 请求。ZIO 调度器决定这些操作的发出时间和顺序。操作被分为五个 I/O 类别，按以下优先级排序：
 
 +----------+-------------+-------------------------------------------+
-| Priority | I/O Class   | Description                               |
+| 优先级   | I/O 类别    | 描述                                       |
 +==========+=============+===========================================+
-| highest  | sync read   | most reads                                |
+| 最高     | 同步读取     | 大多数读取操作                             |
 +----------+-------------+-------------------------------------------+
-|          | sync write  | as defined by application or via 'zfs'    |
-|          |             | 'sync' property                           |
+|          | 同步写入     | 由应用程序定义或通过 'zfs' 的 'sync' 属性 |
 +----------+-------------+-------------------------------------------+
-|          | async read  | prefetch reads                            |
+|          | 异步读取     | 预取读取                                   |
 +----------+-------------+-------------------------------------------+
-|          | async write | most writes                               |
+|          | 异步写入     | 大多数写入操作                             |
 +----------+-------------+-------------------------------------------+
-| lowest   | scrub read  | scan read: includes both scrub and        |
-|          |             | resilver                                  |
+| 最低     | 扫描读取     | 扫描读取：包括 scrub 和 resilver          |
 +----------+-------------+-------------------------------------------+
 
-Each queue defines the minimum and maximum number of concurrent
-operations issued to the device. In addition, the device has an
-aggregate maximum, zfs_vdev_max_active. Note that the sum of the
-per-queue minimums must not exceed the aggregate maximum. If the sum of
-the per-queue maximums exceeds the aggregate maximum, then the number of
-active I/Os may reach zfs_vdev_max_active, in which case no further I/Os
-are issued regardless of whether all per-queue minimums have been met.
+每个队列定义了向设备发出的并发操作的最小和最大数量。此外，设备还有一个总的最大值，即 zfs_vdev_max_active。请注意，每个队列的最小值之和不能超过总的最大值。如果每个队列的最大值之和超过总的最大值，则活动的 I/O 数量可能达到 zfs_vdev_max_active，在这种情况下，无论是否满足所有队列的最小值，都不会再发出更多的 I/O。
 
 +-------------+------------------------------------+------------------------------------+
-| I/O Class   | Min Active Parameter               | Max Active Parameter               |
+| I/O 类别    | 最小活动参数                        | 最大活动参数                        |
 +=============+====================================+====================================+
-| sync read   | ``zfs_vdev_sync_read_min_active``  | ``zfs_vdev_sync_read_max_active``  |
+| 同步读取     | ``zfs_vdev_sync_read_min_active``  | ``zfs_vdev_sync_read_max_active``  |
 +-------------+------------------------------------+------------------------------------+
-| sync write  | ``zfs_vdev_sync_write_min_active`` | ``zfs_vdev_sync_write_max_active`` |
+| 同步写入     | ``zfs_vdev_sync_write_min_active`` | ``zfs_vdev_sync_write_max_active`` |
 +-------------+------------------------------------+------------------------------------+
-| async read  | ``zfs_vdev_async_read_min_active`` | ``zfs_vdev_async_read_max_active`` |
+| 异步读取     | ``zfs_vdev_async_read_min_active`` | ``zfs_vdev_async_read_max_active`` |
 +-------------+------------------------------------+------------------------------------+
-| async write | ``zfs_vdev_async_write_min_active``| ``zfs_vdev_async_write_max_active``|
+| 异步写入     | ``zfs_vdev_async_write_min_active``| ``zfs_vdev_async_write_max_active``|
 +-------------+------------------------------------+------------------------------------+
-| scrub read  | ``zfs_vdev_scrub_min_active``      | ``zfs_vdev_scrub_max_active``      |
+| 扫描读取     | ``zfs_vdev_scrub_min_active``      | ``zfs_vdev_scrub_max_active``      |
 +-------------+------------------------------------+------------------------------------+
 
-For many physical devices, throughput increases with the number of
-concurrent operations, but latency typically suffers. Further, physical
-devices typically have a limit at which more concurrent operations have
-no effect on throughput or can cause the disk performance to
-decrease.
+对于许多物理设备，吞吐量随着并发操作数量的增加而增加，但延迟通常会受到影响。此外，物理设备通常有一个限制，超过该限制后，更多的并发操作对吞吐量没有影响，甚至可能导致磁盘性能下降。
 
-The ZIO scheduler selects the next operation to issue by first looking
-for an I/O class whose minimum has not been satisfied. Once all are
-satisfied and the aggregate maximum has not been hit, the scheduler
-looks for classes whose maximum has not been satisfied. Iteration
-through the I/O classes is done in the order specified above. No further
-operations are issued if the aggregate maximum number of concurrent
-operations has been hit or if there are no operations queued for an I/O
-class that has not hit its maximum. Every time an I/O is queued or an
-operation completes, the I/O scheduler looks for new operations to
-issue.
+ZIO 调度器通过首先查找未满足最小值的 I/O 类别来选择下一个要发出的操作。一旦所有类别都满足且未达到总的最大值，调度器会查找未满足最大值的类别。按照上述顺序遍历 I/O 类别。如果已达到总的最大并发操作数量，或者没有为未达到最大值的 I/O 类别排队的操作，则不会发出更多的操作。每次 I/O 排队或操作完成时，I/O 调度器都会查找新的操作来发出。
 
-In general, smaller max_active's will lead to lower latency of
-synchronous operations. Larger max_active's may lead to higher overall
-throughput, depending on underlying storage and the I/O mix.
+一般来说，较小的 max_active 值会导致同步操作的延迟较低。较大的 max_active 值可能会提高整体吞吐量，具体取决于底层存储和 I/O 混合情况。
 
-The ratio of the queues' max_actives determines the balance of
-performance between reads, writes, and scrubs. For example, when there
-is contention, increasing zfs_vdev_scrub_max_active will cause the scrub
-or resilver to complete more quickly, but reads and writes to have
-higher latency and lower throughput.
+队列的 max_active 值的比率决定了读取、写入和扫描之间的性能平衡。例如，当存在争用时，增加 zfs_vdev_scrub_max_active 会使 scrub 或 resilver 更快完成，但读取和写入的延迟会更高，吞吐量会降低。
 
-All I/O classes have a fixed maximum number of outstanding operations
-except for the async write class. Asynchronous writes represent the data
-that is committed to stable storage during the syncing stage for
-transaction groups (txgs). Transaction groups enter the syncing state
-periodically so the number of queued async writes quickly bursts up and
-then reduce down to zero. The zfs_txg_timeout tunable (default=5
-seconds) sets the target interval for txg sync. Thus a burst of async
-writes every 5 seconds is a normal ZFS I/O pattern.
+所有 I/O 类别都有一个固定的最大未完成操作数量，除了异步写入类别。异步写入表示在事务组（txg）同步阶段提交到稳定存储的数据。事务组定期进入同步状态，因此排队的异步写入数量会迅速增加，然后减少到零。zfs_txg_timeout 可调参数（默认=5 秒）设置了 txg 同步的目标间隔。因此，每 5 秒一次的异步写入突发是 ZFS 的正常 I/O 模式。
 
-Rather than servicing I/Os as quickly as possible, the ZIO scheduler
-changes the maximum number of active async write I/Os according to the
-amount of dirty data in the pool. Since both throughput and latency
-typically increase as the number of concurrent operations issued to
-physical devices, reducing the burstiness in the number of concurrent
-operations also stabilizes the response time of operations from other
-queues. This is particularly important for the sync read and write queues,
-where the periodic async write bursts of the txg sync can lead to
-device-level contention. In broad strokes, the ZIO scheduler issues more
-concurrent operations from the async write queue as there's more dirty
-data in the pool.
+ZIO 调度器不是尽可能快地处理 I/O，而是根据池中脏数据的数量来调整异步写入 I/O 的最大活动数量。由于吞吐量和延迟通常随着向物理设备发出的并发操作数量的增加而增加，减少并发操作的突发性也稳定了其他队列操作的响应时间。这对于同步读取和写入队列尤为重要，因为 txg 同步的周期性异步写入突发可能导致设备级争用。简而言之，ZIO 调度器在池中有更多脏数据时，会从异步写入队列中发出更多的并发操作。

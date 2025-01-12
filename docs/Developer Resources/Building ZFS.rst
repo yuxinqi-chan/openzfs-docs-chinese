@@ -1,40 +1,23 @@
-Building ZFS
+构建 ZFS
 ============
 
-GitHub Repositories
-~~~~~~~~~~~~~~~~~~~
+GitHub 仓库
+~~~~~~~~~~~
 
-The official source for OpenZFS is maintained at GitHub by the
-`openzfs <https://github.com/openzfs/>`__ organization. The primary
-git repository for the project is the `zfs
-<https://github.com/openzfs/zfs>`__ repository.
+OpenZFS 的官方源码由 GitHub 上的 `openzfs <https://github.com/openzfs/>`__ 组织维护。该项目的主要 git 仓库是 `zfs <https://github.com/openzfs/zfs>`__ 仓库。
 
-There are two main components in this repository:
+该仓库包含两个主要组件：
 
--  **ZFS**: The ZFS repository contains a copy of the upstream OpenZFS
-   code which has been adapted and extended for Linux and FreeBSD. The
-   vast majority of the core OpenZFS code is self-contained and can be
-   used without modification.
+-  **ZFS**: ZFS 仓库包含上游 OpenZFS 代码的副本，这些代码已经为 Linux 和 FreeBSD 进行了适配和扩展。绝大部分核心 OpenZFS 代码是自包含的，可以在不修改的情况下使用。
 
--  **SPL**: The SPL is a thin shim layer which is responsible for
-   implementing the fundamental interfaces required by OpenZFS. It's
-   this layer which allows OpenZFS to be used across multiple
-   platforms. SPL used to be maintained in a separate repository, but
-   was merged into the `zfs <https://github.com/openzfs/zfs>`__
-   repository in the ``0.8`` major release.
+-  **SPL**: SPL 是一个薄薄的垫片层，负责实现 OpenZFS 所需的基本接口。正是这一层使得 OpenZFS 能够在多个平台上使用。SPL 曾经在一个单独的仓库中维护，但在 ``0.8`` 大版本发布时被合并到了 `zfs <https://github.com/openzfs/zfs>`__ 仓库中。
 
-Installing Dependencies
+安装依赖
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The first thing you'll need to do is prepare your environment by
-installing a full development tool chain. In addition, development
-headers for both the kernel and the following packages must be
-available. It is important to note that if the development kernel
-headers for the currently running kernel aren't installed, the modules
-won't compile properly.
+首先，您需要准备环境，安装完整的开发工具链。此外，内核和以下包的开发头文件也必须可用。需要注意的是，如果当前运行内核的开发头文件没有安装，模块将无法正确编译。
 
-The following dependencies should be installed to build the latest ZFS
-2.1 release.
+以下依赖项应安装以构建最新的 ZFS 2.1 版本。
 
 -  **RHEL/CentOS 7**:
 
@@ -62,61 +45,35 @@ The following dependencies should be installed to build the latest ZFS
 
    pkg install autoconf automake autotools git gmake python devel/py-sysctl sudo
     
-Build Options
+构建选项
 ~~~~~~~~~~~~~
 
-There are two options for building OpenZFS; the correct one largely
-depends on your requirements.
+构建 OpenZFS 有两种选择；正确的选择主要取决于您的需求。
 
--  **Packages**: Often it can be useful to build custom packages from
-   git which can be installed on a system. This is the best way to
-   perform integration testing with systemd, dracut, and udev. The
-   downside to using packages it is greatly increases the time required
-   to build, install, and test a change.
+-  **包**: 通常从 git 构建自定义包并安装到系统上会很有用。这是与 systemd、dracut 和 udev 进行集成测试的最佳方式。使用包的缺点是大大增加了构建、安装和测试更改所需的时间。
 
--  **In-tree**: Development can be done entirely in the SPL/ZFS source
-   tree. This speeds up development by allowing developers to rapidly
-   iterate on a patch. When working in-tree developers can leverage
-   incremental builds, load/unload kernel modules, execute utilities,
-   and verify all their changes with the ZFS Test Suite.
+-  **树内**: 开发可以完全在 SPL/ZFS 源码树中进行。这通过允许开发人员快速迭代补丁来加速开发。在树内工作时，开发人员可以利用增量构建、加载/卸载内核模块、执行实用程序，并使用 ZFS 测试套件验证所有更改。
 
-The remainder of this page focuses on the **in-tree** option which is
-the recommended method of development for the majority of changes. See
-the :doc:`custom packages <./Custom Packages>` page for additional
-information on building custom packages.
+本页的其余部分将重点介绍 **树内** 选项，这是大多数更改推荐的开发方法。有关构建自定义包的更多信息，请参阅 :doc:`自定义包 <./Custom Packages>` 页面。
 
-Developing In-Tree
+树内开发
 ~~~~~~~~~~~~~~~~~~
 
-Clone from GitHub
+从 GitHub 克隆
 ^^^^^^^^^^^^^^^^^
 
-Start by cloning the ZFS repository from GitHub. The repository has a
-**master** branch for development and a series of **\*-release**
-branches for tagged releases. After checking out the repository your
-clone will default to the master branch. Tagged releases may be built
-by checking out zfs-x.y.z tags with matching version numbers or
-matching release branches.
+首先从 GitHub 克隆 ZFS 仓库。该仓库有一个用于开发的 **master** 分支和一系列用于标记发布的 **\*-release** 分支。检出仓库后，您的克隆将默认使用 master 分支。可以通过检出具有匹配版本号的 zfs-x.y.z 标签或匹配的发布分支来构建标记的发布。
 
 ::
 
    git clone https://github.com/openzfs/zfs
 
-Configure and Build
+配置和构建
 ^^^^^^^^^^^^^^^^^^^
 
-For developers working on a change always create a new topic branch
-based off of master. This will make it easy to open a pull request with
-your change latter. The master branch is kept stable with extensive
-`regression testing <http://build.zfsonlinux.org/>`__ of every pull
-request before and after it's merged. Every effort is made to catch
-defects as early as possible and to keep them out of the tree.
-Developers should be comfortable frequently rebasing their work against
-the latest master branch.
+对于开发人员来说，在进行更改时，始终基于 master 创建一个新的主题分支。这将使以后更容易使用您的更改打开拉取请求。通过广泛的 `回归测试 <http://build.zfsonlinux.org/>`__，master 分支在每次拉取请求合并前后都保持稳定。我们尽一切努力尽早发现缺陷并将其排除在树外。开发人员应习惯于频繁地将其工作与最新的 master 分支进行变基。
 
-In this example we'll use the master branch and walk through a stock
-**in-tree** build. Start by checking out the desired branch then build
-the ZFS and SPL source in the traditional autotools fashion.
+在此示例中，我们将使用 master 分支并逐步完成标准的 **树内** 构建。首先检出所需的分支，然后以传统的 autotools 方式构建 ZFS 和 SPL 源码。
 
 ::
 
@@ -126,54 +83,36 @@ the ZFS and SPL source in the traditional autotools fashion.
    ./configure
    make -s -j$(nproc)
 
-| **tip:** ``--with-linux=PATH`` and ``--with-linux-obj=PATH`` can be
-  passed to configure to specify a kernel installed in a non-default
-  location.
-| **tip:** ``--enable-debug`` can be passed to configure to enable all ASSERTs and
-  additional correctness tests.
+| **提示:** ``--with-linux=PATH`` 和 ``--with-linux-obj=PATH`` 可以传递给 configure 以指定安装在内核非默认位置的路径。
+| **提示:** ``--enable-debug`` 可以传递给 configure 以启用所有 ASSERT 和额外的正确性测试。
 
-**Optional** Build packages
+**可选** 构建包
 
 ::
 
-   make rpm #Builds RPM packages for CentOS/Fedora
-   make deb #Builds RPM converted DEB packages for Debian/Ubuntu
-   make native-deb #Builds native DEB packages for Debian/Ubuntu
+   make rpm #构建 CentOS/Fedora 的 RPM 包
+   make deb #构建 Debian/Ubuntu 的 RPM 转换 DEB 包
+   make native-deb #构建 Debian/Ubuntu 的原生 DEB 包
 
-| **tip:** Native Debian packages build with pre-configured paths for
-  Debian and Ubuntu. It's best not to override the paths during
-  configure.
-| **tip:** For native Debian packages, ``KVERS``, ``KSRC`` and ``KOBJ``
-  environment variables can be exported to specify the kernel installed
-  in non-default location.
+| **提示:** 原生 Debian 包使用为 Debian 和 Ubuntu 预配置的路径构建。最好不要在配置期间覆盖路径。
+| **提示:** 对于原生 Debian 包，可以导出 ``KVERS``、``KSRC`` 和 ``KOBJ`` 环境变量以指定安装在内核非默认位置的路径。
 
 .. note::
-   Support for native Debian packaging will be available starting from
-   openzfs-2.2 release.
+   从 openzfs-2.2 版本开始，将支持原生 Debian 打包。
 
-Install
+安装
 ^^^^^^^
 
-You can run ``zfs-tests.sh`` without installing ZFS, see below. If you
-have reason to install ZFS after building it, pay attention to how your
-distribution handles kernel modules. On Ubuntu, for example, the modules
-from this repository install in the ``extra`` kernel module path, which
-is not in the standard ``depmod`` search path. Therefore, for the
-duration of your testing, edit ``/etc/depmod.d/ubuntu.conf`` and add
-``extra`` to the beginning of the search path.
+您可以在不安装 ZFS 的情况下运行 ``zfs-tests.sh``，请参见下文。如果您有理由在构建后安装 ZFS，请注意您的发行版如何处理内核模块。例如，在 Ubuntu 上，此仓库中的模块安装在 ``extra`` 内核模块路径中，该路径不在标准的 ``depmod`` 搜索路径中。因此，在测试期间，编辑 ``/etc/depmod.d/ubuntu.conf`` 并将 ``extra`` 添加到搜索路径的开头。
 
-You may then install using
-``sudo make install; sudo ldconfig; sudo depmod``. You'd uninstall with
-``sudo make uninstall; sudo ldconfig; sudo depmod``. You can install just
-the kernel modules with ``sudo make -C modules/ install``.
+然后您可以使用 ``sudo make install; sudo ldconfig; sudo depmod`` 进行安装。您可以使用 ``sudo make uninstall; sudo ldconfig; sudo depmod`` 进行卸载。您可以使用 ``sudo make -C modules/ install`` 仅安装内核模块。
 
 .. _running-zloopsh-and-zfs-testssh:
 
-Running zloop.sh and zfs-tests.sh
+运行 zloop.sh 和 zfs-tests.sh
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you wish to run the ZFS Test Suite (ZTS), then ``ksh`` and a few
-additional utilities must be installed.
+如果您希望运行 ZFS 测试套件 (ZTS)，则必须安装 ``ksh`` 和一些额外的实用程序。
 
 -  **RHEL/CentOS 7:**
 
@@ -208,49 +147,30 @@ additional utilities must be installed.
    pkg install base64 bash checkbashisms fio hs-ShellCheck ksh93 pamtester devel/py-flake8 sudo
 
 
-There are a few helper scripts provided in the top-level scripts
-directory designed to aid developers working with in-tree builds.
+在顶级脚本目录中提供了一些辅助脚本，旨在帮助开发人员使用树内构建。
 
--  **zfs-helper.sh:** Certain functionality (i.e. /dev/zvol/) depends on
-   the ZFS provided udev helper scripts being installed on the system.
-   This script can be used to create symlinks on the system from the
-   installation location to the in-tree helper. These links must be in
-   place to successfully run the ZFS Test Suite. The **-i** and **-r**
-   options can be used to install and remove the symlinks.
+-  **zfs-helper.sh:** 某些功能（即 /dev/zvol/）依赖于系统上安装的 ZFS 提供的 udev 辅助脚本。此脚本可用于在系统上创建从安装位置到树内辅助脚本的符号链接。这些链接必须到位才能成功运行 ZFS 测试套件。**-i** 和 **-r** 选项可用于安装和删除符号链接。
 
 ::
 
    sudo ./scripts/zfs-helpers.sh -i
 
--  **zfs.sh:** The freshly built kernel modules can be loaded using
-   ``zfs.sh``. This script can later be used to unload the kernel
-   modules with the **-u** option.
+-  **zfs.sh:** 可以使用 ``zfs.sh`` 加载新构建的内核模块。稍后可以使用 **-u** 选项卸载内核模块。
 
 ::
 
    sudo ./scripts/zfs.sh
 
--  **zloop.sh:** A wrapper to run ztest repeatedly with randomized
-   arguments. The ztest command is a user space stress test designed to
-   detect correctness issues by concurrently running a random set of
-   test cases. If a crash is encountered, the ztest logs, any associated
-   vdev files, and core file (if one exists) are collected and moved to
-   the output directory for analysis.
+-  **zloop.sh:** 一个包装器，用于使用随机参数重复运行 ztest。ztest 命令是一个用户空间压力测试，旨在通过并发运行一组随机测试用例来检测正确性问题。如果遇到崩溃，ztest 日志、任何相关的 vdev 文件和核心文件（如果存在）将被收集并移动到输出目录以供分析。
 
 ::
 
    sudo ./scripts/zloop.sh
 
--  **zfs-tests.sh:** A wrapper which can be used to launch the ZFS Test
-   Suite. Three loopback devices are created on top of sparse files
-   located in ``/var/tmp/`` and used for the regression test. Detailed
-   directions for the ZFS Test Suite can be found in the
-   `README <https://github.com/openzfs/zfs/tree/master/tests>`__
-   located in the top-level tests directory.
+-  **zfs-tests.sh:** 一个包装器，可用于启动 ZFS 测试套件。在 ``/var/tmp/`` 中位于稀疏文件顶部的三个回环设备被创建并用于回归测试。ZFS 测试套件的详细说明可以在顶级测试目录中的 `README <https://github.com/openzfs/zfs/tree/master/tests>`__ 中找到。
 
 ::
 
     ./scripts/zfs-tests.sh -vx
 
-**tip:** The **delegate** tests will be skipped unless group read
-permission is set on the zfs directory and its parents.
+**提示:** 除非在 zfs 目录及其父目录上设置了组读取权限，否则将跳过 **delegate** 测试。

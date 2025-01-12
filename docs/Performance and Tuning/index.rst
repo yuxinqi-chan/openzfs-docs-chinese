@@ -1,9 +1,9 @@
-Performance and Tuning
+性能与调优
 ======================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: 目录:
    :glob:
 
    *

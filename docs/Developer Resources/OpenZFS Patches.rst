@@ -1,50 +1,26 @@
-OpenZFS Patches
-===============
+OpenZFS 补丁
+=============
 
-The ZFS on Linux project is an adaptation of the upstream `OpenZFS
-repository <https://github.com/openzfs/openzfs/>`__ designed to work in
-a Linux environment. This upstream repository acts as a location where
-new features, bug fixes, and performance improvements from all the
-OpenZFS platforms can be integrated. Each platform is responsible for
-tracking the OpenZFS repository and merging the relevant improvements
-back in to their release.
+ZFS on Linux 项目是对上游 `OpenZFS 仓库 <https://github.com/openzfs/openzfs/>`__ 的适配，旨在在 Linux 环境中工作。这个上游仓库是一个集成了来自所有 OpenZFS 平台的新功能、错误修复和性能改进的地方。每个平台负责跟踪 OpenZFS 仓库，并将相关改进合并到他们的版本中。
 
-For the ZFS on Linux project this tracking is managed through an
-`OpenZFS tracking <http://build.zfsonlinux.org/openzfs-tracking.html>`__
-page. The page is updated regularly and shows a list of OpenZFS commits
-and their status in regard to the ZFS on Linux master branch.
+对于 ZFS on Linux 项目，这种跟踪是通过一个 `OpenZFS 跟踪 <http://build.zfsonlinux.org/openzfs-tracking.html>`__ 页面来管理的。该页面会定期更新，并显示 OpenZFS 提交列表及其在 ZFS on Linux 主分支中的状态。
 
-This page describes the process of applying outstanding OpenZFS commits
-to ZFS on Linux and submitting those changes for inclusion. As a
-developer this is a great way to familiarize yourself with ZFS on Linux
-and to begin quickly making a valuable contribution to the project. The
-following guide assumes you have a `github
-account <https://help.github.com/articles/signing-up-for-a-new-github-account/>`__,
-are familiar with git, and are used to developing in a Linux
-environment.
+本页面描述了将未完成的 OpenZFS 提交应用到 ZFS on Linux 并提交这些更改以包含的过程。作为开发者，这是熟悉 ZFS on Linux 并快速为项目做出有价值贡献的好方法。以下指南假设您已经有一个 `GitHub 账户 <https://help.github.com/articles/signing-up-for-a-new-github-account/>`__，熟悉 git，并且习惯在 Linux 环境中开发。
 
-Porting OpenZFS changes to ZFS on Linux
+将 OpenZFS 更改移植到 ZFS on Linux
 ---------------------------------------
 
-Setup the Environment
-~~~~~~~~~~~~~~~~~~~~~
+环境设置
+~~~~~~~~~~~~~
 
-**Clone the source.** Start by making a local clone of the
-`spl <https://github.com/zfsonlinux/spl>`__ and
-`zfs <https://github.com/zfsonlinux/zfs>`__ repositories.
+**克隆源代码。** 首先，克隆 `spl <https://github.com/zfsonlinux/spl>`__ 和 `zfs <https://github.com/zfsonlinux/zfs>`__ 仓库到本地。
 
 ::
 
    $ git clone -o zfsonlinux https://github.com/zfsonlinux/spl.git
    $ git clone -o zfsonlinux https://github.com/zfsonlinux/zfs.git
 
-**Add remote repositories.** Using the GitHub web interface
-`fork <https://help.github.com/articles/fork-a-repo/>`__ the
-`zfs <https://github.com/zfsonlinux/zfs>`__ repository in to your
-personal GitHub account. Add your new zfs fork and the
-`openzfs <https://github.com/openzfs/openzfs/>`__ repository as remotes
-and then fetch both repositories. The OpenZFS repository is large and
-the initial fetch may take some time over a slow connection.
+**添加远程仓库。** 使用 GitHub 网页界面 `fork <https://help.github.com/articles/fork-a-repo/>`__ `zfs <https://github.com/zfsonlinux/zfs>`__ 仓库到您的个人 GitHub 账户。将您的新 zfs fork 和 `openzfs <https://github.com/openzfs/openzfs/>`__ 仓库添加为远程仓库，然后获取这两个仓库。OpenZFS 仓库很大，初始获取在慢速连接上可能需要一些时间。
 
 ::
 
@@ -53,11 +29,7 @@ the initial fetch may take some time over a slow connection.
    $ git remote add openzfs https://github.com/openzfs/openzfs.git
    $ git fetch --all
 
-**Build the source.** Compile the spl and zfs master branches. These
-branches are always kept stable and this is a useful verification that
-you have a full build environment installed and all the required
-dependencies are available. This may also speed up the compile time
-latter for small patches where incremental builds are an option.
+**编译源代码。** 编译 spl 和 zfs 的主分支。这些分支始终保持稳定，这是验证您是否安装了完整的构建环境以及所有必需的依赖项是否可用的有用方法。这也可能加快后续小补丁的编译时间，因为增量构建是一个选项。
 
 ::
 
@@ -67,40 +39,29 @@ latter for small patches where incremental builds are an option.
    $ cd ../zfs
    $ sh autogen.sh && ./configure --enable-debug && make -s -j$(nproc)
 
-Pick a patch
+选择一个补丁
 ~~~~~~~~~~~~
 
-Consult the `OpenZFS
-tracking <http://build.zfsonlinux.org/openzfs-tracking.html>`__ page and
-select a patch which has not yet been applied. For your first patch you
-will want to select a small patch to familiarize yourself with the
-process.
+查阅 `OpenZFS 跟踪 <http://build.zfsonlinux.org/openzfs-tracking.html>`__ 页面，并选择一个尚未应用的补丁。对于您的第一个补丁，您应该选择一个小补丁以熟悉该过程。
 
-Porting a Patch
-~~~~~~~~~~~~~~~
+移植补丁
+~~~~~~~~~~~~~
 
-There are 2 methods:
+有两种方法：
 
--  `cherry-pick (easier) <#cherry-pick>`__
--  `manual merge <#manual-merge>`__
+-  `cherry-pick（更简单） <#cherry-pick>`__
+-  `手动合并 <#manual-merge>`__
 
-Please read about `manual merge <#manual-merge>`__ first to learn the
-whole process.
+请先阅读 `手动合并 <#manual-merge>`__ 以了解整个过程。
 
 Cherry-pick
 ^^^^^^^^^^^
 
-You can start to
-`cherry-pick <https://git-scm.com/docs/git-cherry-pick>`__ by your own,
-but we have made a special
-`script <https://github.com/zfsonlinux/zfs-buildbot/blob/master/scripts/openzfs-merge.sh>`__,
-which tries to
-`cherry-pick <https://git-scm.com/docs/git-cherry-pick>`__ the patch
-automatically and generates the description.
+您可以自己开始 `cherry-pick <https://git-scm.com/docs/git-cherry-pick>`__，但我们提供了一个特殊的 `脚本 <https://github.com/zfsonlinux/zfs-buildbot/blob/master/scripts/openzfs-merge.sh>`__，它会尝试自动 `cherry-pick <https://git-scm.com/docs/git-cherry-pick>`__ 补丁并生成描述。
 
-0) Prepare environment:
+0) 准备环境：
 
-Mandatory git settings (add to ``~/.gitconfig``):
+必需的 git 设置（添加到 ``~/.gitconfig``）：
 
 ::
 
@@ -110,209 +71,137 @@ Mandatory git settings (add to ``~/.gitconfig``):
        email = mail@yourmail.com
        name = Your Name
 
-Download the script:
+下载脚本：
 
 ::
 
    wget https://raw.githubusercontent.com/zfsonlinux/zfs-buildbot/master/scripts/openzfs-merge.sh
 
-1) Run:
+1) 运行：
 
 ::
 
    ./openzfs-merge.sh -d path_to_zfs_folder -c openzfs_commit_hash
 
-This command will fetch all repositories, create a new branch
-``autoport-ozXXXX`` (XXXX - OpenZFS issue number), try to cherry-pick,
-compile and check cstyle on success.
+此命令将获取所有仓库，创建一个新分支 ``autoport-ozXXXX``（XXXX - OpenZFS 问题编号），尝试 cherry-pick，编译并在成功时检查 cstyle。
 
-If it succeeds without any merge conflicts - go to ``autoport-ozXXXX``
-branch, it will have ready to pull commit. Congratulations, you can go
-to step 7!
+如果它成功且没有任何合并冲突 - 转到 ``autoport-ozXXXX`` 分支，它将有一个准备提交的提交。恭喜，您可以转到步骤 7！
 
-Otherwise you should go to step 2.
+否则，您应该转到步骤 2。
 
-2) Resolve all merge conflicts manually. Easy method - install
-   `Meld <http://meldmerge.org/>`__ or any other diff tool and run
-   ``git mergetool``.
+2) 手动解决所有合并冲突。简单的方法 - 安装 `Meld <http://meldmerge.org/>`__ 或任何其他差异工具并运行 ``git mergetool``。
 
-3) Check all compile and cstyle errors (See `Testing a
-   patch <#testing-a-patch>`__).
+3) 检查所有编译和 cstyle 错误（参见 `测试补丁 <#testing-a-patch>`__）。
 
-4) Commit your changes with any description.
+4) 提交您的更改并附上任何描述。
 
-5) Update commit description (last commit will be changed):
+5) 更新提交描述（最后一次提交将被更改）：
 
 ::
 
    ./openzfs-merge.sh -d path_to_zfs_folder -g openzfs_commit_hash
 
-6) Add any porting notes (if you have modified something):
-   ``git commit --amend``
+6) 添加任何移植说明（如果您修改了某些内容）：``git commit --amend``
 
-7) Push your commit to github:
-   ``git push <your-github-account> autoport-ozXXXX``
+7) 将您的提交推送到 GitHub：``git push <your-github-account> autoport-ozXXXX``
 
-8) Create a pull request to ZoL master branch.
+8) 创建一个拉取请求到 ZoL 主分支。
 
-9) Go to `Testing a patch <#testing-a-patch>`__ section.
+9) 转到 `测试补丁 <#testing-a-patch>`__ 部分。
 
-Manual merge
+手动合并
 ^^^^^^^^^^^^
 
-**Create a new branch.** It is important to create a new branch for
-every commit you port to ZFS on Linux. This will allow you to easily
-submit your work as a GitHub pull request and it makes it possible to
-work on multiple OpenZFS changes concurrently. All development branches
-need to be based off of the ZFS master branch and it's helpful to name
-the branches after the issue number you're working on.
+**创建一个新分支。** 为每个移植到 ZFS on Linux 的提交创建一个新分支非常重要。这将允许您轻松地将您的工作作为 GitHub 拉取请求提交，并使您能够同时处理多个 OpenZFS 更改。所有开发分支都需要基于 ZFS 主分支，并且以您正在处理的问题编号命名分支会很有帮助。
 
 ::
 
    $ git checkout -b openzfs-<issue-nr> master
 
-**Generate a patch.** One of the first things you'll notice about the
-ZFS on Linux repository is that it is laid out differently than the
-OpenZFS repository. Organizationally it is much flatter, this is
-possible because it only contains the code for OpenZFS not an entire OS.
-That means that in order to apply a patch from OpenZFS the path names in
-the patch must be changed. A script called zfs2zol-patch.sed has been
-provided to perform this translation. Use the ``git format-patch``
-command and this script to generate a patch.
+**生成补丁。** 您首先会注意到的一件事是，ZFS on Linux 仓库的布局与 OpenZFS 仓库不同。在组织上，它要扁平得多，这是因为它只包含 OpenZFS 的代码，而不是整个操作系统。这意味着，为了应用来自 OpenZFS 的补丁，补丁中的路径名称必须更改。提供了一个名为 zfs2zol-patch.sed 的脚本来执行此转换。使用 ``git format-patch`` 命令和此脚本来生成补丁。
 
 ::
 
    $ git format-patch --stdout <commit-hash>^..<commit-hash> | \
        ./scripts/zfs2zol-patch.sed >openzfs-<issue-nr>.diff
 
-**Apply the patch.** In many cases the generated patch will apply
-cleanly to the repository. However, it's important to keep in mind the
-zfs2zol-patch.sed script only translates the paths. There are often
-additional reasons why a patch might not apply. In some cases hunks of
-the patch may not be applicable to Linux and should be dropped. In other
-cases a patch may depend on other changes which must be applied first.
-The changes may also conflict with Linux specific modifications. In all
-of these cases the patch will need to be manually modified to apply
-cleanly while preserving the its original intent.
+**应用补丁。** 在许多情况下，生成的补丁将干净地应用到仓库。但是，请记住，zfs2zol-patch.sed 脚本仅转换路径。通常还有其他原因导致补丁可能无法应用。在某些情况下，补丁的部分内容可能不适用于 Linux，应该删除。在其他情况下，补丁可能依赖于必须先应用的其他更改。这些更改也可能与 Linux 特定的修改冲突。在所有这些情况下，都需要手动修改补丁以干净地应用，同时保留其原始意图。
 
 ::
 
    $ git am ./openzfs-<commit-nr>.diff
 
-**Update the commit message.** By using ``git format-patch`` to generate
-the patch and then ``git am`` to apply it the original comment and
-authorship will be preserved. However, due to the formatting of the
-OpenZFS commit you will likely find that the entire commit comment has
-been squashed in to the subject line. Use ``git commit --amend`` to
-cleanup the comment and be careful to follow `these standard
-guidelines <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`__.
+**更新提交消息。** 通过使用 ``git format-patch`` 生成补丁，然后使用 ``git am`` 应用它，原始评论和作者身份将得以保留。但是，由于 OpenZFS 提交的格式，您可能会发现整个提交评论都被压缩到了主题行中。使用 ``git commit --amend`` 清理评论，并小心遵循 `这些标准指南 <http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`__。
 
-The summary line of an OpenZFS commit is often very long and you should
-truncate it to 50 characters. This is useful because it preserves the
-correct formatting of ``git log --pretty=oneline`` command. Make sure to
-leave a blank line between the summary and body of the commit. Then
-include the full OpenZFS commit message wrapping any lines which exceed
-72 characters. Finally, add a ``Ported-by`` tag with your contact
-information and both a ``OpenZFS-issue`` and ``OpenZFS-commit`` tag with
-appropriate links. You'll want to verify your commit contains all of the
-following information:
+OpenZFS 提交的摘要行通常很长，您应该将其截断为 50 个字符。这很有用，因为它保留了 ``git log --pretty=oneline`` 命令的正确格式。确保在摘要和提交正文之间留一个空行。然后包括完整的 OpenZFS 提交消息，换行任何超过 72 个字符的行。最后，添加一个 ``Ported-by`` 标签，包含您的联系信息，以及一个 ``OpenZFS-issue`` 和 ``OpenZFS-commit`` 标签，并附上适当的链接。您需要验证您的提交包含以下所有信息：
 
--  The subject line from the original OpenZFS patch in the form:
-   "OpenZFS <issue-nr> - short description".
--  The original patch authorship should be preserved.
--  The OpenZFS commit message.
--  The following tags:
+-  原始 OpenZFS 补丁的主题行，格式为："OpenZFS <issue-nr> - 简短描述"。
+-  原始补丁的作者身份应保留。
+-  OpenZFS 提交消息。
+-  以下标签：
 
-   -  **Authored by:** Original patch author
-   -  **Reviewed by:** All OpenZFS reviewers from the original patch.
-   -  **Approved by:** All OpenZFS reviewers from the original patch.
-   -  **Ported-by:** Your name and email address.
+   -  **Authored by:** 原始补丁作者
+   -  **Reviewed by:** 原始补丁的所有 OpenZFS 审阅者。
+   -  **Approved by:** 原始补丁的所有 OpenZFS 审阅者。
+   -  **Ported-by:** 您的姓名和电子邮件地址。
    -  **OpenZFS-issue:** https ://www.illumos.org/issues/issue
    -  **OpenZFS-commit:** https
       ://github.com/openzfs/openzfs/commit/hash
 
--  **Porting Notes:** An optional section describing any changes
-   required when porting.
+-  **移植说明:** 可选部分，描述移植时所需的任何更改。
 
-For example, OpenZFS issue 6873 was `applied to
-Linux <https://github.com/zfsonlinux/zfs/commit/b3744ae>`__ from this
-upstream `OpenZFS
-commit <https://github.com/openzfs/openzfs/commit/ee06391>`__.
+例如，OpenZFS 问题 6873 已 `应用到 Linux <https://github.com/zfsonlinux/zfs/commit/b3744ae>`__，来自此上游 `OpenZFS 提交 <https://github.com/openzfs/openzfs/commit/ee06391>`__。
 
 ::
 
-   OpenZFS 6873 - zfs_destroy_snaps_nvl leaks errlist
+   OpenZFS 6873 - zfs_destroy_snaps_nvl 泄漏 errlist
       
    Authored by: Chris Williamson <chris.williamson@delphix.com>
    Reviewed by: Matthew Ahrens <mahrens@delphix.com>
    Reviewed by: Paul Dagnelie <pcd@delphix.com>
    Ported-by: Denys Rtveliashvili <denys@rtveliashvili.name>
        
-   lzc_destroy_snaps() returns an nvlist in errlist.
-   zfs_destroy_snaps_nvl() should nvlist_free() it before returning.
+   lzc_destroy_snaps() 返回一个 nvlist 在 errlist 中。
+   zfs_destroy_snaps_nvl() 应该在返回之前 nvlist_free() 它。
        
    OpenZFS-issue: https://www.illumos.org/issues/6873
    OpenZFS-commit: https://github.com/openzfs/openzfs/commit/ee06391
 
-Testing a Patch
-~~~~~~~~~~~~~~~
+测试补丁
+~~~~~~~~~~~~~
 
-**Build the source.** Verify the patched source compiles without errors
-and all warnings are resolved.
+**编译源代码。** 验证修补后的源代码可以无错误地编译，并解决所有警告。
 
 ::
 
    $ make -s -j$(nproc)
 
-**Run the style checker.** Verify the patched source passes the style
-checker, the command should return without printing any output.
+**运行样式检查器。** 验证修补后的源代码通过样式检查器，命令应返回而不打印任何输出。
 
 ::
 
    $ make cstyle
 
-**Open a Pull Request.** When your patch builds cleanly and passes the
-style checks `open a new pull
-request <https://help.github.com/articles/creating-a-pull-request/>`__.
-The pull request will be queued for `automated
-testing <https://github.com/zfsonlinux/zfs-buildbot/>`__. As part of the
-testing the change is built for a wide range of Linux distributions and
-a battery of functional and stress tests are run to detect regressions.
+**打开拉取请求。** 当您的补丁干净地构建并通过样式检查时，`打开一个新的拉取请求 <https://help.github.com/articles/creating-a-pull-request/>`__。拉取请求将排队进行 `自动化测试 <https://github.com/zfsonlinux/zfs-buildbot/>`__。作为测试的一部分，该更改将针对广泛的 Linux 发行版进行构建，并运行一系列功能和压力测试以检测回归。
 
 ::
 
    $ git push <your-github-account> openzfs-<issue-nr>
 
-**Fix any issues.** Testing takes approximately 2 hours to fully
-complete and the results are posted in the GitHub `pull
-request <https://github.com/zfsonlinux/zfs/pull/4594>`__. All the tests
-are expected to pass and you should investigate and resolve any test
-failures. The `test
-scripts <https://github.com/zfsonlinux/zfs-buildbot/tree/master/scripts>`__
-are all available and designed to run locally in order reproduce an
-issue. Once you've resolved the issue force update the pull request to
-trigger a new round of testing. Iterate until all the tests are passing.
+**修复任何问题。** 测试大约需要 2 小时才能完全完成，结果将发布在 GitHub `拉取请求 <https://github.com/zfsonlinux/zfs/pull/4594>`__ 中。所有测试都应通过，您应该调查并解决任何测试失败。`测试脚本 <https://github.com/zfsonlinux/zfs-buildbot/tree/master/scripts>`__ 都可用，并且设计为在本地运行以重现问题。一旦您解决了问题，强制更新拉取请求以触发新一轮测试。迭代直到所有测试都通过。
 
 ::
 
-   # Fix issue, amend commit, force update branch.
+   # 修复问题，修改提交，强制更新分支。
    $ git commit --amend
    $ git push --force <your-github-account> openzfs-<issue-nr>
 
-Merging the Patch
+合并补丁
 ~~~~~~~~~~~~~~~~~
 
-**Review.** Lastly one of the ZFS on Linux maintainers will make a final
-review of the patch and may request additional changes. Once the
-maintainer is happy with the final version of the patch they will add
-their signed-off-by, merge it to the master branch, mark it complete on
-the tracking page, and thank you for your contribution to the project!
+**审查。** 最后，ZFS on Linux 的维护者之一将对补丁进行最终审查，并可能请求额外的更改。一旦维护者对补丁的最终版本感到满意，他们将添加他们的签名，将其合并到主分支，在跟踪页面上标记为完成，并感谢您对项目的贡献！
 
-Porting ZFS on Linux changes to OpenZFS
+将 ZFS on Linux 更改移植到 OpenZFS
 ---------------------------------------
 
-Often an issue will be first fixed in ZFS on Linux or a new feature
-developed. Changes which are not Linux specific should be submitted
-upstream to the OpenZFS GitHub repository for review. The process for
-this is described in the `OpenZFS
-README <https://github.com/openzfs/openzfs/>`__.
+通常，问题会首先在 ZFS on Linux 中修复或开发新功能。非 Linux 特定的更改应提交到上游 OpenZFS GitHub 仓库进行审查。此过程在 `OpenZFS README <https://github.com/openzfs/openzfs/>`__ 中有描述。
